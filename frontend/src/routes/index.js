@@ -1,12 +1,20 @@
+import MainPage from '../pages/MainPage/MainPage';
+import OpportunityDetailPage from '../pages/OpportunityDetailPage/OpportunityDetailPage';
+// import LoginPage from '../pages/LoginPage/LoginPage';
+// import RegisterPage from '../pages/RegisterPage/RegisterPage';
+
 export const common_routes = [
-    // {path: '/', element: MainApp},
-]
+    { path: '/', element: MainPage },
+    { path: '/opportunity/:id', element: OpportunityDetailPage },
+];
 
 export const no_authorized_routes = [
-    // {path: '*', element: Login},
-    // {path: '/users/registration', element: Registration},
-]
+    // { path: '/login', element: LoginPage },
+    // { path: '/register', element: RegisterPage },
+    { path: '*', element: MainPage },
+];
 
 export const authorized_routes = [
-    // {path: '*', element: MainApp},
-]
+    // Добавим позже
+    { path: '*', element: MainPage },
+];
