@@ -20,6 +20,7 @@ import Button from '../../components/UI/Button/Button';
 import { opportunities, skillsTags } from '../../data/mockData';
 import { useFavorites } from '../../hooks/useFavorites';
 import './OpportunityDetailPage.css';
+import { useAuth } from "../../contexts/AuthContext";
 
 
 const OpportunityDetailPage = () => {
@@ -29,6 +30,7 @@ const OpportunityDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [similarOpportunities, setSimilarOpportunities] = useState([]);
   const [hasApplied, setHasApplied] = useState(false);
+  const {IsAuth} = useAuth();
   
   const { favorites, addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
@@ -63,16 +65,14 @@ const OpportunityDetailPage = () => {
   };
 
   const handleApply = () => {
-    // Для неавторизованных сохраняем в localStorage
-    const applied = JSON.parse(localStorage.getItem('applied') || '[]');
-    if (!applied.some(item => item.id === opportunity.id)) {
-      applied.push(opportunity);
-      localStorage.setItem('applied', JSON.stringify(applied));
-      setHasApplied(true);
-      
-      // Показываем уведомление
-      alert('Вы откликнулись на возможность! Для отслеживания статуса войдите в аккаунт.');
-    }
+      if (IsAuth == false){
+        alert('Вы не можете откликнуться на возможность! Войдите в аккаунт.');
+      }
+      else{
+          // Для авторизованных посслыаем запрос
+          setHasApplied(true);
+          // запрос для авторизованных      
+       }
   };
 
   const handleShare = () => {

@@ -9,6 +9,7 @@ import Button from '../../components/UI/Button/Button';
 import { opportunities, skillsTags, supportedCities } from '../../data/mockData';
 import { useFavorites } from '../../hooks/useFavorites';
 import './MainPage.css';
+import { useAuth } from "../../contexts/AuthContext";
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -18,18 +19,24 @@ const MainPage = () => {
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [appliedOpportunities, setAppliedOpportunities] = useState([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(true);
+  const {IsAuth} = useAuth();
   
   const { favorites, addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
-  // Загружаем отклики из localStorage (для неавторизованных)
   useEffect(() => {
-    const storedApplied = localStorage.getItem('applied');
-    if (storedApplied) {
-      try {
+    if (IsAuth == false){
+      // Загружаем отклики из localStorage (для неавторизованных)
+      const storedApplied = localStorage.getItem('applied');
+      if (storedApplied) {
+        try {
         setAppliedOpportunities(JSON.parse(storedApplied));
-      } catch (e) {
-        console.error('Error parsing applied:', e);
+        } catch (e) {
+          console.error('Error parsing applied:', e);
+        }
       }
+    }
+    else{
+      // для авторизованных работа с бэкендом 
     }
   }, []);
 
@@ -107,15 +114,17 @@ const MainPage = () => {
   };
 
   const handleApply = (opportunityId) => {
-    // Для неавторизованных сохраняем в localStorage
-    const opportunity = opportunities.find(opp => opp.id === opportunityId);
-    if (opportunity) {
-      const newApplied = [...appliedOpportunities, opportunity];
-      setAppliedOpportunities(newApplied);
-      localStorage.setItem('applied', JSON.stringify(newApplied));
-      
-      // Показываем уведомление
-      alert('Вы откликнулись на возможность! Для отслеживания статуса войдите в аккаунт.');
+    if (IsAuth == false){
+      alert('Вы не можете откликнуться на возможность! Войдите в аккаунт.');
+    }
+    else{
+      // Для авторизованных посслыаем запрос
+      const opportunity = opportunities.find(opp => opp.id === opportunityId);
+      if (opportunity) {
+        const newApplied = [...appliedOpportunities, opportunity];
+        setAppliedOpportunities(newApplied);
+        // запрос для авторизованных      
+     }
     }
   };
 
