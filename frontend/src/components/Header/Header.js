@@ -1,11 +1,19 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { User, LogIn, Home, Heart, Briefcase } from 'lucide-react';
 import Button from '../UI/Button/Button';
+import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 
-const Header = ({ isAuth = false }) => {
+const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { IsAuth, User } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   return (
     <header className="header">
@@ -17,15 +25,24 @@ const Header = ({ isAuth = false }) => {
           </Link>
           
           <nav className="nav-menu">
-            <Link to="/" className="nav-link active">
+            <Link 
+              to="/" 
+              className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            >
               <Home size={18} />
               <span>Главная</span>
             </Link>
-            <Link to="/favorites" className="nav-link">
+            <Link 
+              to="/favorites" 
+              className={`nav-link ${isActive('/favorites') ? 'active' : ''}`}
+            >
               <Heart size={18} />
               <span>Избранное</span>
             </Link>
-            <Link to="/companies" className="nav-link">
+            <Link 
+              to="/companies" 
+              className={`nav-link ${isActive('/companies') ? 'active' : ''}`}
+            >
               <Briefcase size={18} />
               <span>Компании</span>
             </Link>
@@ -33,18 +50,31 @@ const Header = ({ isAuth = false }) => {
         </div>
 
         <div className="header-right">
-          {isAuth ? (
-            <div className="user-menu">
-              <button className="user-avatar">
-                <img src="https://via.placeholder.com/32x32" alt="User" />
+          {IsAuth ? (
+            <div className="user-menu" onMouseLeave={() => setIsDropdownOpen(false)}>
+              <button 
+                className="user-avatar"
+                onMouseEnter={() => setIsDropdownOpen(true)}
+              >
+                <img 
+                  src={User?.avatar || 'https://via.placeholder.com/32x32'} 
+                  alt={User?.first_name || 'User'} 
+                />
               </button>
-              <div className="user-dropdown">
-                <Link to="/profile" className="dropdown-item">Профиль</Link>
-                <Link to="/dashboard" className="dropdown-item">Личный кабинет</Link>
-                <Link to="/settings" className="dropdown-item">Настройки</Link>
-                <div className="dropdown-divider"></div>
-                <button className="dropdown-item logout">Выйти</button>
-              </div>
+              {isDropdownOpen && (
+                <div className="user-dropdown" onMouseEnter={() => setIsDropdownOpen(true)}>
+                  <div className="dropdown-user-info">
+                    <strong>{User?.first_name} {User?.last_name}</strong>
+                    <span>{User?.email}</span>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  <Link to="/profile" className="dropdown-item">Профиль</Link>
+                  <Link to="/dashboard" className="dropdown-item">Личный кабинет</Link>
+                  <Link to="/settings" className="dropdown-item">Настройки</Link>
+                  <div className="dropdown-divider"></div>
+                  <button className="dropdown-item logout">Выйти</button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="auth-buttons">

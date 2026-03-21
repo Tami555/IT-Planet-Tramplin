@@ -10,6 +10,7 @@ import { opportunities, skillsTags, supportedCities } from '../../data/mockData'
 import { useFavorites } from '../../hooks/useFavorites';
 import './MainPage.css';
 import { useAuth } from "../../contexts/AuthContext";
+import Footer from '../../components/Footer/Footer';
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -337,6 +338,7 @@ const MainPage = () => {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 };
