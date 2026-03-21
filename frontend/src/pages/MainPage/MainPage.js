@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Map, List, Search, Filter } from 'lucide-react';
 import Header from '../../components/Header/Header';
@@ -119,14 +119,18 @@ const MainPage = () => {
     }
   };
 
-  const handleMarkerClick = (opportunity) => {
-    setSelectedOpportunity(opportunity);
-    // Плавно скроллим к карточке
-    const element = document.getElementById(`opportunity-${opportunity.id}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
+  const handleMarkerClick = () => {}
+//   useCallback((opportunity) => {
+//   setSelectedOpportunity(opportunity);
+  
+//   // Скроллим к карточке, но с задержкой чтобы не блокировать клик по маркеру
+//   setTimeout(() => {
+//     const element = document.getElementById(`opportunity-${opportunity.id}`);
+//     if (element) {
+//       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//     }
+//   }, 500);
+// }, []);
 
   return (
     <div className="main-page">

@@ -15,28 +15,29 @@ const YandexMap = ({
 }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const markersRef = useRef([]);
-  const [selectedCity, setSelectedCity] = useState('');
-  const [mapCenter, setMapCenter] = useState(initialLocation);
+  const clustererRef = useRef(null);
+  const isFirstLoadRef = useRef(true);
+  const prevOpportunitiesRef = useRef([]);
+  const prevFavoritesRef = useRef([]);
+  const prevAppliedRef = useRef([]);
   
   const { ymaps, loading, error } = useYandesMaps(apiKey, theme);
 
-  // Функция для создания иконки маркера в зависимости от статуса
+  // Функция для создания иконки маркера
   const getMarkerIcon = useCallback((opportunity, isFavorite, isApplied) => {
     if (isApplied) {
       return {
         preset: 'islands#greenCircleDotIcon',
-        iconColor: '#27E6EC'
+        iconColor: '#4CAF50'
       };
     }
     if (isFavorite) {
       return {
-        preset: 'islands#violetCircleDotIcon',
-        iconColor: '#6F71A1'
+        preset: 'islands#yellowCircleDotIcon',
+        iconColor: '#FFC107'
       };
     }
     
-    // Разные цвета для разных типов возможностей
     const typeColors = {
       internship: '#18A3B7',
       vacancy: '#5AA5CD',
@@ -91,28 +92,42 @@ const YandexMap = ({
     `;
   }, []);
 
-  // Отображение маркеров на карте
-  const displayMarkers = useCallback(() => {
-    if (!ymaps || !mapInstanceRef.current || !opportunities.length) return;
+  // Создание маркеров (только когда данные действительно изменились)
+  const createMarkers = useCallback(() => {
+    if (!ymaps || !mapInstanceRef.current) return;
 
-    // Удаляем старые маркеры
-    markersRef.current.forEach(marker => {
-      mapInstanceRef.current.geoObjects.remove(marker);
-    });
-    markersRef.current = [];
+    // Проверяем, изменились ли данные
+    const opportunitiesChanged = JSON.stringify(prevOpportunitiesRef.current) !== JSON.stringify(opportunities);
+    const favoritesChanged = JSON.stringify(prevFavoritesRef.current) !== JSON.stringify(favorites);
+    const appliedChanged = JSON.stringify(prevAppliedRef.current) !== JSON.stringify(applied);
+    
+    // Если ничего не изменилось, не пересоздаем маркеры
+    if (!opportunitiesChanged && !favoritesChanged && !appliedChanged && clustererRef.current) {
+      return;
+    }
 
-    // Фильтруем возможности только с координатами
+    // Сохраняем текущие данные для сравнения
+    prevOpportunitiesRef.current = opportunities;
+    prevFavoritesRef.current = favorites;
+    prevAppliedRef.current = applied;
+
+    // Сохраняем текущую позицию карты
+    const currentCenter = mapInstanceRef.current.getCenter();
+    const currentZoom = mapInstanceRef.current.getZoom();
+
+    // Удаляем старый кластеризатор
+    if (clustererRef.current) {
+      mapInstanceRef.current.geoObjects.remove(clustererRef.current);
+    }
+
+    // Фильтруем возможности с координатами
     const opportunitiesWithCoords = opportunities.filter(opp => opp.coordinates);
+    
+    if (opportunitiesWithCoords.length === 0) return;
 
-    // Создаем кластеризатор для большого количества маркеров
+    // Создаем новый кластеризатор
     const clusterer = new ymaps.Clusterer({
       preset: 'islands#invertedVioletClusterIcons',
-      clusterIcons: [{
-        href: '/images/cluster-icon.png',
-        size: [40, 40],
-        offset: [-20, -20]
-      }],
-      clusterIconColor: '#6F71A1',
       clusterDisableClickZoom: false,
       clusterHideIconOnBalloonOpen: false,
       geoObjectHideIconOnBalloonOpen: false
@@ -139,26 +154,45 @@ const YandexMap = ({
         }
       );
 
-      marker.events.add('click', () => {
+      // Обработчик клика
+      marker.events.add('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Открываем балун
+        marker.balloon.open();
+        
+        // Вызываем callback для подсветки карточки
         if (onMarkerClick) {
           onMarkerClick(opportunity);
         }
       });
 
       clusterer.add(marker);
-      markersRef.current.push(marker);
     });
 
+    // Добавляем кластеризатор на карту
     mapInstanceRef.current.geoObjects.add(clusterer);
+    clustererRef.current = clusterer;
 
-    // Автоматически центрируем карту по маркерам если есть
-    if (opportunitiesWithCoords.length > 0) {
+    // Восстанавливаем позицию карты
+    if (currentCenter && currentZoom && !isFirstLoadRef.current) {
+      mapInstanceRef.current.setCenter(currentCenter, currentZoom, {
+        duration: 0,
+        checkZoomRange: true
+      });
+    }
+
+    // При первой загрузке центрируем по маркерам
+    if (isFirstLoadRef.current && opportunitiesWithCoords.length > 0) {
       const bounds = clusterer.getBounds();
       if (bounds) {
         mapInstanceRef.current.setBounds(bounds, {
           checkZoomRange: true,
-          zoomMargin: 50
+          zoomMargin: 50,
+          duration: 300
         });
+        isFirstLoadRef.current = false;
       }
     }
   }, [ymaps, opportunities, favorites, applied, getMarkerIcon, createBalloonContent, onMarkerClick]);
@@ -167,9 +201,8 @@ const YandexMap = ({
   useEffect(() => {
     if (!ymaps || !mapRef.current || mapInstanceRef.current) return;
 
-    // Создаем карту с темной темой
     const map = new ymaps.Map(mapRef.current, {
-      center: mapCenter,
+      center: initialLocation,
       zoom: zoom,
       controls: ['zoomControl', 'fullscreenControl', 'geolocationControl']
     }, {
@@ -178,9 +211,7 @@ const YandexMap = ({
       autoFitToViewport: 'always'
     });
 
-    // Применяем темную тему
     if (theme === 'dark') {
-      // Кастомная темная тема
       map.options.set('theme', {
         region: {
           fillColor: '#1A334A',
@@ -195,40 +226,25 @@ const YandexMap = ({
     }
 
     mapInstanceRef.current = map;
-
-    // Добавляем поиск по городам
-    const searchControl = new ymaps.control.SearchControl({
-      options: {
-        provider: 'yandex#search',
-        useMapBounds: true,
-        noPlacemark: true,
-        resultsPerPage: 5
-      }
-    });
-    map.controls.add(searchControl);
-
-    searchControl.events.add('resultselect', (e) => {
-      const index = e.get('index');
-      searchControl.getResult(index).then((res) => {
-        const coords = res.geometry.getCoordinates();
-        setMapCenter(coords);
-      });
-    });
+    
+    // Создаем маркеры после инициализации
+    createMarkers();
 
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.destroy();
         mapInstanceRef.current = null;
+        clustererRef.current = null;
       }
     };
-  }, [ymaps, mapCenter, zoom, theme]);
+  }, [ymaps, initialLocation, zoom, theme]);
 
-  // Обновляем маркеры при изменении данных
+  // Обновляем маркеры только когда данные реально изменились
   useEffect(() => {
     if (mapInstanceRef.current && ymaps) {
-      displayMarkers();
+      createMarkers();
     }
-  }, [opportunities, favorites, applied, ymaps, displayMarkers]);
+  }, [opportunities, favorites, applied, ymaps, createMarkers]);
 
   if (loading) {
     return (
@@ -271,11 +287,11 @@ const YandexMap = ({
         </div>
         <div className="legend-divider"></div>
         <div className="legend-item favorite">
-          <span className="legend-dot" style={{ backgroundColor: '#6F71A1' }}></span>
+          <span className="legend-dot" style={{ backgroundColor: '#FFC107' }}></span>
           <span>В избранном</span>
         </div>
         <div className="legend-item applied">
-          <span className="legend-dot" style={{ backgroundColor: '#27E6EC' }}></span>
+          <span className="legend-dot" style={{ backgroundColor: '#4CAF50' }}></span>
           <span>Откликнулся</span>
         </div>
       </div>

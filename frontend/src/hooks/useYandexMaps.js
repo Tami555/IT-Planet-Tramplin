@@ -24,7 +24,6 @@ const useYandexMaps = (apiKey, theme = 'dark') => {
     // Создаем скрипт
     const scriptId = 'yandex-maps-script';
     
-    // Проверяем, не добавлен ли уже скрипт
     if (document.getElementById(scriptId)) {
       return;
     }
@@ -34,6 +33,15 @@ const useYandexMaps = (apiKey, theme = 'dark') => {
     script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apiKey}&lang=ru_RU`;
     script.async = true;
 
+    script.onload = () => {
+      if (window.ymaps) {
+        window.ymaps.ready(() => {
+          setYmaps(window.ymaps);
+          setLoading(false);
+        });
+      }
+    };
+
     script.onerror = () => {
       setError('Не удалось загрузить Яндекс Карты');
       setLoading(false);
@@ -42,9 +50,9 @@ const useYandexMaps = (apiKey, theme = 'dark') => {
     document.head.appendChild(script);
 
     return () => {
-      // Не удаляем скрипт, чтобы не перезагружать при каждом рендере
+      // Не удаляем скрипт
     };
-  }, [apiKey, theme]);
+  }, [apiKey]);
 
   return { ymaps, loading, error };
 };

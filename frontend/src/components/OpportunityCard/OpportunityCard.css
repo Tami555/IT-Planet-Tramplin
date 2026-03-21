@@ -90,6 +90,7 @@
   justify-content: center;
   transition: all var(--transition-fast);
   color: var(--text-muted);
+  margin-right: 30px;
 }
 
 .favorite-btn:hover {
