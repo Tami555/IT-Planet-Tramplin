@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// Перечисления
+// ─────────────────────────────────────────────
+
+enum Role {
+  APPLICANT  // Соискатель
+  EMPLOYER   // Работодатель
+  CURATOR    // Куратор платформы
+}
+
+enum VerificationStatus {
+  PENDING   // Ожидает проверки
+  VERIFIED  // Верифицирован
+  REJECTED  // Отклонён
+}
+
+enum OpportunityType {
+  INTERNSHIP         // Стажировка
+  VACANCY_JUNIOR     // Вакансия Junior+
+  MENTORSHIP         // Менторская программа
+  CAREER_EVENT       // Карьерное мероприятие
+}
+
+enum WorkFormat {
+  OFFICE  // Офис
+  HYBRID  // Гибрид
+  REMOTE  // Удалённо
+}
+
+enum OpportunityStatus {
+  DRAFT      // Черновик
+  ACTIVE     // Активна
+  CLOSED     // Закрыта
+  PLANNED    // Запланирована
+  MODERATION // На модерации
+}
+
+enum ApplicationStatus {
+  PENDING   // На рассмотрении
+  ACCEPTED  // Принят
+  REJECTED  // Отклонён
+  RESERVE   // В резерве
+}
+
+enum PrivacyLevel {
+  PRIVATE   // Только я
+  CONTACTS  // Только контакты
+  PUBLIC    // Все авторизованные
+}
+
+enum ContactStatus {
+  PENDING  // Запрос отправлен
+  ACCEPTED // Принят
+  REJECTED // Отклонён
+}
+
+// ─────────────────────────────────────────────
+// Пользователь (базовая сущность)
+// ─────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  displayName  String
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  applicant     Applicant?
+  employer      Employer?
+  curator       Curator?
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────
+// Соискатель
+// ─────────────────────────────────────────────
+
+model Applicant {
+  id             String       @id @default(uuid())
+  userId         String       @unique
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String
+  lastName       String
+  middleName     String?
+  university     String?
+  graduationYear Int?
+  course         Int?
+  bio            String?
+  avatarUrl      String?
+  resumeUrl      String?
+  portfolioLinks String[]     @default([])
+  skills         String[]     @default([])
+  // Настройки приватности
+  privacyResume    PrivacyLevel @default(CONTACTS)
+  privacyResponses PrivacyLevel @default(CONTACTS)
+  privacyProfile   PrivacyLevel @default(PUBLIC)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  applications  Application[]
+  favorites     Favorite[]
+  sentContacts  Contact[]     @relation("ContactSender")
+  receivedContacts Contact[]  @relation("ContactReceiver")
+
+  @@map("applicants")
+}
+
+// ─────────────────────────────────────────────
+// Работодатель
+// ─────────────────────────────────────────────
+
+model Employer {
+  id                 String             @id @default(uuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName        String
+  description        String?
+  industry           String?
+  websiteUrl         String?
+  socialLinks        String[]           @default([])
+  inn                String?
+  corporateEmail     String?
+  logoUrl            String?
+  officePhotoUrls    String[]           @default([])
+  videoUrl           String?
+  city               String?
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationNote   String?            // Комментарий куратора при отклонении
+  verifiedAt         DateTime?
+  verifiedBy         String?            // id куратора
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  opportunities Opportunity[]
+
+  @@map("employers")
+}
+
+// ─────────────────────────────────────────────
+// Куратор
+// ─────────────────────────────────────────────
+
+model Curator {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("curators")
+}
+
+// ─────────────────────────────────────────────
+// Теги
+// ─────────────────────────────────────────────
+
+model Tag {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  category    String   // technology | level | employment | custom
+  createdById String?  // null = системный тег
+  createdAt   DateTime @default(now())
+
+  opportunities OpportunityTag[]
+
+  @@map("tags")
+}
+
+// ─────────────────────────────────────────────
+// Возможности (вакансии, стажировки, мероприятия)
+// ─────────────────────────────────────────────
+
+model Opportunity {
+  id           String            @id @default(uuid())
+  employerId   String
+  employer     Employer          @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  type         OpportunityType
+  format       WorkFormat
+  status       OpportunityStatus @default(MODERATION)
+  // Местоположение
+  address      String?           // Точный адрес для офлайн
+  city         String?           // Город для удалённых
+  latitude     Float?
+  longitude    Float?
+  // Зарплата
+  salaryFrom   Int?
+  salaryTo     Int?
+  currency     String?           @default("RUB")
+  // Даты
+  publishedAt  DateTime?
+  expiresAt    DateTime?
+  eventDate    DateTime?
+  // Контакты
+  contactEmail String?
+  contactPhone String?
+  contactLinks String[]          @default([])
+  // Медиа
+  mediaUrls    String[]          @default([])
+  // Модерация
+  moderationNote String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  tags         OpportunityTag[]
+  applications Application[]
+  favorites    Favorite[]
+
+  @@map("opportunities")
+}
+
+model OpportunityTag {
+  opportunityId String
+  tagId         String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([opportunityId, tagId])
+  @@map("opportunity_tags")
+}
+
+// ─────────────────────────────────────────────
+// Отклики
+// ─────────────────────────────────────────────
+
+model Application {
+  id            String            @id @default(uuid())
+  applicantId   String
+  opportunityId String
+  applicant     Applicant         @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity       @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  status        ApplicationStatus @default(PENDING)
+  coverLetter   String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([applicantId, opportunityId])
+  @@map("applications")
+}
+
+// ─────────────────────────────────────────────
+// Избранное
+// ─────────────────────────────────────────────
+
+model Favorite {
+  id            String      @id @default(uuid())
+  applicantId   String
+  opportunityId String
+  applicant     Applicant   @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([applicantId, opportunityId])
+  @@map("favorites")
+}
+
+// ─────────────────────────────────────────────
+// Профессиональные контакты
+// ─────────────────────────────────────────────
+
+model Contact {
+  id         String        @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     ContactStatus @default(PENDING)
+  sender     Applicant     @relation("ContactSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   Applicant     @relation("ContactReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@map("contacts")
+}
