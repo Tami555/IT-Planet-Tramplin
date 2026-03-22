@@ -8,7 +8,7 @@ import './Header.css';
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { IsAuth, User } = useAuth();
+  const { IsAuth, User, ClearUser } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const isActive = (path) => {
@@ -57,8 +57,8 @@ const Header = () => {
                 onMouseEnter={() => setIsDropdownOpen(true)}
               >
                 <img 
-                  src={User?.avatar || 'https://via.placeholder.com/32x32'} 
-                  alt={User?.first_name || 'User'} 
+                  src={User?.logo || "https://img.freepik.com/premium-photo/cool-hacker-cat_1231246-6534.jpg?semt=ais_hybrid" } 
+                  alt={User?.first_name || 'User'}
                 />
               </button>
               {isDropdownOpen && (
@@ -72,7 +72,10 @@ const Header = () => {
                   <Link to="/dashboard" className="dropdown-item">Личный кабинет</Link>
                   <Link to="/settings" className="dropdown-item">Настройки</Link>
                   <div className="dropdown-divider"></div>
-                  <button className="dropdown-item logout">Выйти</button>
+                  <button className="dropdown-item logout" onClick={() => {
+                    ClearUser();
+                    window.location = '/';
+                  }}>Выйти</button>
                 </div>
               )}
             </div>

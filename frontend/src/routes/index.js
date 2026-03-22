@@ -2,8 +2,10 @@ import MainPage from '../pages/MainPage/MainPage';
 import OpportunityDetailPage from '../pages/OpportunityDetailPage/OpportunityDetailPage';
 import FavoritesPage from '../pages/FavoritesPage/FavoritesPage';
 import CompaniesPage from '../pages/CompaniesPage/CompaniesPage';
-// import LoginPage from '../pages/LoginPage/LoginPage';
-// import RegisterPage from '../pages/RegisterPage/RegisterPage';
+import LoginPage from '../pages/LoginPage/LoginPage';
+import RegisterPage from '../pages/RegisterPage/RegisterPage';
+import LoginAdminPage from '../pages/LoginPage/LoginAdminPage';
+
 
 export const common_routes = [
     { path: '/', element: MainPage },
@@ -13,11 +15,14 @@ export const common_routes = [
 ];
 
 export const no_authorized_routes = [
-    // { path: '/login', element: LoginPage },
-    // { path: '/register', element: RegisterPage },
+    { path: '/admin/login', element: LoginAdminPage },
+    { path: '/login', element: LoginPage },
+    { path: '/register', element: RegisterPage },
     { path: '*', element: MainPage },
 ];
 
 export const authorized_routes = [
+    { path: '/login', element: MainPage },
+    { path: '/register', element: MainPage },
     { path: '*', element: MainPage },
 ];

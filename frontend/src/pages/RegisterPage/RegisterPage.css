@@ -1,0 +1,27 @@
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.row-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.errors {
+  color: var(--error);
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .row-fields {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

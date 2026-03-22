@@ -229,3 +229,63 @@ export const supportedCities = [
   'Екатеринбург',
   'Нижний Новгород',
 ];
+
+// Пользователи для авторизации
+export const users = {
+  students: [
+    {
+      id: 1,
+      email: 'student@example.com',
+      password: 'student123',
+      role: 'student',
+      fullName: 'Иванов Иван Иванович',
+      university: 'МГТУ им. Н.Э. Баумана',
+      course: 3,
+      graduationYear: 2027,
+      phone: '+79123456789',
+      avatar: null,
+      resume: null,
+      portfolio: null,
+      skills: [1, 3, 4], // Python, JavaScript, React
+      favorites: [],
+      applied: []
+    },
+    {
+      id: 2,
+      email: 'student2@example.com',
+      password: 'student123',
+      role: 'student',
+      fullName: 'Петрова Анна Сергеевна',
+      university: 'НИУ ВШЭ',
+      course: 4,
+      graduationYear: 2026,
+      phone: '+79234567890',
+      avatar: null,
+      resume: null,
+      portfolio: null,
+      skills: [2, 5], // Java, SQL
+      favorites: [],
+      applied: []
+    }
+  ],
+  employers: companies.map((company, index) => ({
+    ...company,
+    id: company.id,
+    email: `company${company.id}@example.com`,
+    password: `company123`,
+    role: 'employer',
+    phone: '+7' + (9000000000 + index),
+    inn: `${Math.floor(Math.random() * 1000000000000)}`.slice(0, 12),
+    verified: company.verified,
+    activeOpportunities: opportunities.filter(opp => opp.company.id === company.id).length
+  }))
+};
+
+// Администратор
+export const admin = {
+  id: 1,
+  email: 'admin@tramplin.ru',
+  password: 'admin123',
+  role: 'admin',
+  fullName: 'Администратор Платформы'
+};
