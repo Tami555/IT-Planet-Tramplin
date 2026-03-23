@@ -4,6 +4,7 @@ import { User, LogIn, Home, Heart, Briefcase } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
+import { logout } from '../../api/services';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -14,6 +15,12 @@ const Header = () => {
   const isActive = (path) => {
     return location.pathname === path;
   };
+
+  const logout_func = async () => {
+    await logout();
+    ClearUser();
+    window.location = '/';
+  }
 
   return (
     <header className="header">
@@ -72,10 +79,7 @@ const Header = () => {
                   <Link to="/dashboard" className="dropdown-item">Личный кабинет</Link>
                   <Link to="/settings" className="dropdown-item">Настройки</Link>
                   <div className="dropdown-divider"></div>
-                  <button className="dropdown-item logout" onClick={() => {
-                    ClearUser();
-                    window.location = '/';
-                  }}>Выйти</button>
+                  <button className="dropdown-item logout" onClick={logout_func}>Выйти</button>
                 </div>
               )}
             </div>
