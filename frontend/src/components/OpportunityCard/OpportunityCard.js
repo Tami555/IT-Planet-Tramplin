@@ -4,16 +4,16 @@ import { Heart } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import './OpportunityCard.css';
 
+
 const OpportunityCard = ({ 
   opportunity, 
   isFavorite = false,
   onFavoriteToggle,
-  variant = 'default' // default, compact, detailed
+  variant = 'default', // default, compact, detailed
 }) => {
   const navigate = useNavigate();
 
   const handleCardClick = (e) => {
-    // Не переходим, если клик был по кнопке избранного
     if (e.target.closest('.favorite-btn')) {
       return;
     }
@@ -27,30 +27,29 @@ const OpportunityCard = ({
 
   const getTypeLabel = (type) => {
     const types = {
-      internship: 'Стажировка',
-      vacancy: 'Вакансия',
-      mentorship: 'Менторство',
-      event: 'Мероприятие'
+      INTERNSHIP: 'Стажировка',
+      VACANCY_JUNIOR: 'Вакансия',
+      MENTORSHIP: 'Менторство',
+      CAREER_EVENT: 'Мероприятие'
     };
     return types[type] || type;
   };
 
   const getFormatIcon = (format) => {
     switch(format) {
-      case 'office': return '🏢';
-      case 'remote': return '🏠';
-      case 'hybrid': return '🔄';
+      case 'OFFICE': return '🏢';
+      case 'REMOTE': return '🏠';
+      case 'HYBRID': return '🔄';
       default: return '📍';
     }
   };
 
-  const formatSalary = (salary) => {
-    if (!salary) return 'Не указана';
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      maximumFractionDigits: 0
-    }).format(salary);
+  const formatSalary = (salaryFrom, salaryTo) => {
+    if (!salaryFrom && !salaryTo) return 'Не указана';
+    if (salaryFrom && salaryTo) return `${salaryFrom.toLocaleString()} - ${salaryTo.toLocaleString()} ₽`;
+    if (salaryFrom) return `от ${salaryFrom.toLocaleString()} ₽`;
+    if (salaryTo) return `до ${salaryTo.toLocaleString()} ₽`;
+    return 'Не указана';
   };
 
   return (
@@ -61,15 +60,15 @@ const OpportunityCard = ({
       <div className="card-header">
         <div className="company-info">
           <img 
-            src={opportunity.company.logo} 
-            alt={opportunity.company.name}
+            src={opportunity.company?.logo || opportunity.employer?.logoUrl || 'https://via.placeholder.com/40x40?text=Company'} 
+            alt={opportunity.company?.name || opportunity.employer?.companyName}
             className="company-logo"
             onError={(e) => {
               e.target.src = 'https://via.placeholder.com/40x40?text=Company';
             }}
           />
           <div className="company-details">
-            <h3 className="company-name">{opportunity.company.name}</h3>
+            <h3 className="company-name">{opportunity.company?.name || opportunity.employer?.companyName}</h3>
             <span className="opportunity-type">{getTypeLabel(opportunity.type)}</span>
           </div>
         </div>
@@ -84,30 +83,26 @@ const OpportunityCard = ({
 
       <div className="card-body">
         <h4 className="opportunity-title">{opportunity.title}</h4>
-        <p className="opportunity-description">{opportunity.description.substring(0, 100)}...</p>
+        <p className="opportunity-description">{opportunity.description?.substring(0, 100)}...</p>
         
-        {opportunity.salary && (
+        {(opportunity.salaryFrom || opportunity.salaryTo) && (
           <div className="salary">
             <span className="salary-label">З/п:</span>
-            <span className="salary-value">{formatSalary(opportunity.salary)}</span>
+            <span className="salary-value">
+              {formatSalary(opportunity.salaryFrom, opportunity.salaryTo)}
+            </span>
           </div>
         )}
       </div>
 
       <div className="card-footer">
         <div className="tags">
-          {opportunity.tags.slice(0, 3).map(tagId => {
-            // В реальном приложении здесь нужно маппиться к тегам из данных
-            const tagName = tagId === 1 ? 'Python' : 
-                           tagId === 2 ? 'Java' : 
-                           tagId === 3 ? 'JS' : 
-                           tagId === 4 ? 'React' : 
-                           tagId === 5 ? 'SQL' : 'IT';
+          {opportunity.tags?.slice(0, 3).map(tag => {
             return (
-              <span key={tagId} className="tag">{tagName}</span>
+              <span key={tag.tag.id} className="tag">{tag.tag.name}</span>
             );
           })}
-          {opportunity.tags.length > 3 && (
+          {opportunity.tags?.length > 3 && (
             <span className="tag-more">+{opportunity.tags.length - 3}</span>
           )}
         </div>

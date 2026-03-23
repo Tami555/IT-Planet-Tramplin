@@ -70,6 +70,8 @@
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--primary-accent);
   z-index: 10;
+  width: 200px;
+  height: 230px;
 }
 
 .legend-item {
@@ -201,4 +203,48 @@
     padding: 12px;
     font-size: 11px;
   }
+}
+
+
+.legend-item-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-dot-group {
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Стили для балуна с несколькими мероприятиями */
+.custom-balloon-multiple::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-balloon-multiple::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-balloon-multiple::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.custom-balloon-multiple::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

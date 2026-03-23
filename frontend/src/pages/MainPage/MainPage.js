@@ -6,145 +6,283 @@ import YandexMap from '../../components/YandexMap/YandexMap';
 import OpportunityCard from '../../components/OpportunityCard/OpportunityCard';
 import Filters from '../../components/Filters/Filters';
 import Button from '../../components/UI/Button/Button';
-import { opportunities, skillsTags, supportedCities } from '../../data/mockData';
 import { useFavorites } from '../../hooks/useFavorites';
-import './MainPage.css';
 import { useAuth } from "../../contexts/AuthContext";
+import { useFetch } from '../../hooks/useFetch';
+import { getOpportunities, applyToOpportunity, getUserApplications, getTags } from '../../api/services';
 import Footer from '../../components/Footer/Footer';
+import './MainPage.css';
+
+
+// Координаты городов для карты
+const cityCoordinates = {
+  'Москва': [55.7558, 37.6176],
+  'Санкт-Петербург': [59.9343, 30.3351],
+  'Казань': [55.7887, 49.1221],
+  'Новосибирск': [55.0084, 82.9357],
+  'Екатеринбург': [56.8389, 60.6057],
+  'Нижний Новгород': [56.2965, 43.9361]
+};
+
 
 const MainPage = () => {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState('both'); // 'map', 'list', 'both'
-  const [filteredOpportunities, setFilteredOpportunities] = useState(opportunities);
+  const { IsAuth, user } = useAuth();
+  const [viewMode, setViewMode] = useState('both');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
-  const [appliedOpportunities, setAppliedOpportunities] = useState([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(true);
-  const {IsAuth} = useAuth();
-  
+  const [appliedOpportunities, setAppliedOpportunities] = useState([]);
+  const [skillsTags, setSkillsTags] = useState([]);
+  const [currentFilters, setCurrentFilters] = useState({
+    type: null,
+    format: null,
+    salaryMin: null,
+    salaryMax: null,
+    city: null,
+    tagIds: []
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit] = useState(12); // количество на странице
   const { favorites, addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
-
+  
+  // Загружаем теги с бэкенда
+  const [fetchTags, tagsLoading] = useFetch(async () => {
+    const response = await getTags({ category: 'technology' });
+    setSkillsTags(response);
+    return response;
+  });
+  
   useEffect(() => {
-    if (IsAuth == false){
-      // Загружаем отклики из localStorage (для неавторизованных)
-      const storedApplied = localStorage.getItem('applied');
-      if (storedApplied) {
-        try {
-        setAppliedOpportunities(JSON.parse(storedApplied));
-        } catch (e) {
-          console.error('Error parsing applied:', e);
-        }
-      }
+    fetchTags();
+  }, []);
+  
+  // Загружаем отклики пользователя (только для авторизованных)
+  const [fetchApplications, applicationsLoading] = useFetch(async () => {
+    const response = await getUserApplications(1, 100);
+    setAppliedOpportunities(response.data || []);
+    return response;
+  });
+  
+  useEffect(() => {
+    if (IsAuth && user) {
+      fetchApplications();
     }
-    else{
-      // для авторизованных работа с бэкендом 
+  }, [IsAuth, user]);
+  
+  // Запрос на получение возможностей с пагинацией
+  const [fetchOpportunities, opportunitiesLoading, opportunitiesError] = useFetch(async () => {
+    const params = {
+      ...currentFilters,
+      search: searchQuery || undefined,
+      page: currentPage,
+      limit: limit
+    };
+    
+    // Удаляем null значения
+    Object.keys(params).forEach(key => {
+      if (params[key] === null || params[key] === '') {
+        delete params[key];
+      }
+      if (key === 'tagIds' && params[key] && params[key].length === 0) {
+        delete params[key];
+      }
+    });
+    
+    const response = await getOpportunities(params);
+    setFilteredOpportunities(response.data);
+    setPaginationMeta(response.meta);
+    return response;
+  });
+  
+  const [filteredOpportunities, setFilteredOpportunities] = useState([]);
+  const [paginationMeta, setPaginationMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 20,
+    totalPages: 1
+  });
+  
+  // Генерируем уникальный ключ для карты на основе данных
+  const [mapKey, setMapKey] = useState(0);
+  
+  // Загружаем данные при изменении поиска, фильтров или страницы
+  useEffect(() => {
+    fetchOpportunities();
+  }, [searchQuery, currentFilters, currentPage]);
+  
+  // Обновляем ключ карты при изменении отфильтрованных данных
+  useEffect(() => {
+    setMapKey(prevKey => prevKey + 1);
+  }, [filteredOpportunities, currentFilters, searchQuery]);
+  
+  // Обработчик изменения фильтров из компонента Filters
+  const handleFilterChange = useCallback((filters) => {
+    setCurrentPage(1); // Сбрасываем страницу при изменении фильтров
+    setCurrentFilters({
+      type: filters.type?.[0] || null,
+      format: filters.format?.[0] || null,
+      salaryMin: filters.salary?.min ? parseInt(filters.salary.min) : null,
+      salaryMax: filters.salary?.max ? parseInt(filters.salary.max) : null,
+      city: filters.city || null,
+      tagIds: filters.skills || []
+    });
+  }, []);
+  
+  // Функция для смены страницы
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+    // Скроллим к верху списка
+    const opportunitiesSection = document.querySelector('.opportunities-section');
+    if (opportunitiesSection) {
+      opportunitiesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
-
-  // Фильтрация возможностей
-  useEffect(() => {
-    let filtered = [...opportunities];
-
-    // Поиск по названию и описанию
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(opp => 
-        opp.title.toLowerCase().includes(query) ||
-        opp.description.toLowerCase().includes(query) ||
-        opp.company.name.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredOpportunities(filtered);
-  }, [searchQuery]);
-
-  const handleFilterChange = (filters) => {
-    let filtered = [...opportunities];
-
-    // Фильтр по навыкам
-    if (filters.skills && filters.skills.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.skills.some(skillId => opp.tags.includes(skillId))
-      );
-    }
-
-    // Фильтр по зарплате
-    if (filters.salary) {
-      if (filters.salary.min) {
-        filtered = filtered.filter(opp => 
-          !opp.salary || opp.salary >= parseInt(filters.salary.min)
-        );
-      }
-      if (filters.salary.max) {
-        filtered = filtered.filter(opp => 
-          !opp.salary || opp.salary <= parseInt(filters.salary.max)
-        );
-      }
-    }
-
-    // Фильтр по формату работы
-    if (filters.format && filters.format.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.format.includes(opp.format)
-      );
-    }
-
-    // Фильтр по типу возможности
-    if (filters.type && filters.type.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.type.includes(opp.type)
-      );
-    }
-
-    // Фильтр по городу
-    if (filters.city) {
-      filtered = filtered.filter(opp => 
-        opp.city === filters.city
-      );
-    }
-
-    setFilteredOpportunities(filtered);
-  };
-
-  const handleFavoriteToggle = (opportunity) => {
+  
+  // Обработчик добавления/удаления из избранного
+  const handleFavoriteToggle = useCallback((opportunity) => {
     if (isFavorite(opportunity.id)) {
       removeFromFavorites(opportunity.id);
     } else {
       addToFavorites(opportunity);
     }
-  };
-
-  const handleApply = (opportunityId) => {
-    if (IsAuth == false){
-      alert('Вы не можете откликнуться на возможность! Войдите в аккаунт.');
-    }
-    else{
-      // Для авторизованных посслыаем запрос
-      const opportunity = opportunities.find(opp => opp.id === opportunityId);
-      if (opportunity) {
-        const newApplied = [...appliedOpportunities, opportunity];
-        setAppliedOpportunities(newApplied);
-        // запрос для авторизованных      
-     }
-    }
-  };
-
-  const handleMarkerClick = () => {}
-//   useCallback((opportunity) => {
-//   setSelectedOpportunity(opportunity);
+  }, [isFavorite, addToFavorites, removeFromFavorites]);
   
-//   // Скроллим к карточке, но с задержкой чтобы не блокировать клик по маркеру
-//   setTimeout(() => {
-//     const element = document.getElementById(`opportunity-${opportunity.id}`);
-//     if (element) {
-//       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-//     }
-//   }, 500);
-// }, []);
-
+  // Обработчик отклика на возможность
+  const [applyToOpportunityFunc, applyLoading] = useFetch(async (opportunityId) => {
+    await applyToOpportunity(opportunityId);
+    await fetchApplications();
+    alert('Вы успешно откликнулись на возможность!');
+  });
+  
+  const handleApply = useCallback(async (opportunityId) => {
+    if (!IsAuth) {
+      alert('Войдите в аккаунт, чтобы откликнуться');
+      return;
+    }
+    
+    await applyToOpportunityFunc(opportunityId);
+  }, [IsAuth, applyToOpportunityFunc]);
+  
+  // Обработчик клика на маркер
+  const handleMarkerClick = () => {}
+  // useCallback((opportunity) => {
+  //   setSelectedOpportunity(opportunity);
+  //   if (viewMode !== 'map') {
+  //     setTimeout(() => {
+  //       const element = document.getElementById(`opportunity-${opportunity.id}`);
+  //       if (element) {
+  //         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  //       }
+  //     }, 500);
+  //   }
+  // }, [viewMode]);
+  
+  // Подготовка данных для карты
+  const mapOpportunities = filteredOpportunities.map(opp => ({
+    ...opp,
+    coordinates: opp.latitude && opp.longitude 
+      ? [opp.latitude, opp.longitude]
+      : cityCoordinates[opp.city] || cityCoordinates['Москва'],
+    company: {
+      name: opp.employer?.companyName || 'Компания',
+      logo: opp.employer?.logoUrl || null
+    },
+    salary: opp.salaryFrom || null,
+    format: opp.format?.toLowerCase() || 'offline',
+    tags: opp.tags?.map(t => t.tag?.id) || []
+  }));
+  
+  // Проверка, откликался ли пользователь
+  const isApplied = useCallback((opportunityId) => {
+    return appliedOpportunities.some(app => app.opportunityId === opportunityId);
+  }, [appliedOpportunities]);
+  
+  // Компонент пагинации
+  const Pagination = ({ meta, onPageChange }) => {
+    const { page, totalPages, total } = meta;
+    
+    if (totalPages <= 1) return null;
+    
+    const getPageNumbers = () => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+      let l;
+      
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= page - delta && i <= page + delta)) {
+          range.push(i);
+        }
+      }
+      
+      range.forEach((i) => {
+        if (l) {
+          if (i - l === 2) {
+            rangeWithDots.push(l + 1);
+          } else if (i - l !== 1) {
+            rangeWithDots.push('...');
+          }
+        }
+        rangeWithDots.push(i);
+        l = i;
+      });
+      
+      return rangeWithDots;
+    };
+    
+    return (
+      <div className="pagination">
+        <button
+          className="pagination-btn pagination-prev"
+          onClick={() => onPageChange(page - 1)}
+          disabled={page === 1}
+        >
+          ←
+        </button>
+        
+        {getPageNumbers().map((item, index) => (
+          item === '...' ? (
+            <span key={`dots-${index}`} className="pagination-dots">...</span>
+          ) : (
+            <button
+              key={item}
+              className={`pagination-btn ${page === item ? 'active' : ''}`}
+              onClick={() => onPageChange(item)}
+            >
+              {item}
+            </button>
+          )
+        ))}
+        
+        <button
+          className="pagination-btn pagination-next"
+          onClick={() => onPageChange(page + 1)}
+          disabled={page === totalPages}
+        >
+          →
+        </button>
+      </div>
+    );
+  };
+  
+  if (opportunitiesError) {
+    return (
+      <div className="main-page">
+        <Header />
+        <div className="error-container">
+          <h2>Ошибка загрузки данных</h2>
+          <p>{opportunitiesError}</p>
+          <Button onClick={() => fetchOpportunities()}>Повторить</Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+  
   return (
     <div className="main-page">
-      <Header isAuth={false} />
+      <Header />
 
       <div className="main-content">
         {/* Hero секция с поиском */}
@@ -209,7 +347,7 @@ const MainPage = () => {
           </div>
 
           {/* Фильтры */}
-          {isFiltersVisible && (
+          {isFiltersVisible && !tagsLoading && (
             <Filters 
               onFilterChange={handleFilterChange}
               skills={skillsTags}
@@ -218,17 +356,23 @@ const MainPage = () => {
 
           {/* Основной контент */}
           <div className={`content-grid ${viewMode === 'both' ? 'grid-2cols' : ''}`}>
-            {/* Карта */}
+            {/* Карта - добавляем key для принудительной перерисовки */}
             {(viewMode === 'map' || viewMode === 'both') && (
               <div className="map-section">
                 <YandexMap
+                  key={`map-${viewMode}-${mapKey}`}
                   apiKey={process.env.REACT_APP_YANDEX_MAPS_API_KEY}
-                  opportunities={filteredOpportunities}
+                  opportunities={mapOpportunities}
                   favorites={favorites}
                   applied={appliedOpportunities}
                   onMarkerClick={handleMarkerClick}
                   theme="dark"
                 />
+                {opportunitiesLoading && mapOpportunities.length === 0 && (
+                  <div className="loading-overlay">
+                    <div className="loading-spinner">Загрузка данных...</div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -237,18 +381,19 @@ const MainPage = () => {
               <div className="opportunities-section">
                 <div className="opportunities-header">
                   <h2 className="section-title">
-                    Найдено: {filteredOpportunities.length} возможностей
+                    Найдено: {paginationMeta.total} возможностей
                   </h2>
                   <select className="sort-select">
                     <option value="newest">Сначала новые</option>
                     <option value="salary_desc">По убыванию зарплаты</option>
                     <option value="salary_asc">По возрастанию зарплаты</option>
-                    <option value="popular">По популярности</option>
                   </select>
                 </div>
 
                 <div className="opportunities-list">
-                  {filteredOpportunities.length > 0 ? (
+                  {opportunitiesLoading && filteredOpportunities.length === 0 ? (
+                    <div className="loading-spinner">Загрузка...</div>
+                  ) : filteredOpportunities.length > 0 ? (
                     filteredOpportunities.map(opportunity => (
                       <div 
                         key={opportunity.id} 
@@ -256,9 +401,16 @@ const MainPage = () => {
                         className={`opportunity-item ${selectedOpportunity?.id === opportunity.id ? 'highlighted' : ''}`}
                       >
                         <OpportunityCard
-                          opportunity={opportunity}
+                          opportunity={{
+                            ...opportunity,
+                            company: {
+                              name: opportunity.employer?.companyName,
+                              logo: opportunity.employer?.logoUrl
+                            },
+                            salary: opportunity.salaryFrom
+                          }}
                           isFavorite={isFavorite(opportunity.id)}
-                          onFavoriteToggle={handleFavoriteToggle}
+                          onFavoriteToggle={() => handleFavoriteToggle(opportunity)}
                         />
                         {viewMode === 'list' && (
                           <div className="card-actions">
@@ -266,8 +418,9 @@ const MainPage = () => {
                               variant="primary"
                               size="small"
                               onClick={() => handleApply(opportunity.id)}
+                              disabled={isApplied(opportunity.id) || applyLoading}
                             >
-                              Откликнуться
+                              {isApplied(opportunity.id) ? 'Откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
                             </Button>
                           </div>
                         )}
@@ -282,7 +435,15 @@ const MainPage = () => {
                         variant="outline" 
                         onClick={() => {
                           setSearchQuery('');
-                          handleFilterChange({});
+                          setCurrentPage(1);
+                          setCurrentFilters({
+                            type: null,
+                            format: null,
+                            salaryMin: null,
+                            salaryMax: null,
+                            city: null,
+                            tagIds: []
+                          });
                         }}
                       >
                         Сбросить фильтры
@@ -291,15 +452,9 @@ const MainPage = () => {
                   )}
                 </div>
 
-                {/* Пагинация (для демо) */}
-                {filteredOpportunities.length > 0 && (
-                  <div className="pagination">
-                    <button className="pagination-btn active">1</button>
-                    <button className="pagination-btn">2</button>
-                    <button className="pagination-btn">3</button>
-                    <button className="pagination-btn">...</button>
-                    <button className="pagination-btn">10</button>
-                  </div>
+                {/* Пагинация - используем новый компонент */}
+                {paginationMeta.totalPages > 1 && (
+                  <Pagination meta={paginationMeta} onPageChange={handlePageChange} />
                 )}
               </div>
             )}
@@ -307,7 +462,7 @@ const MainPage = () => {
         </div>
       </div>
 
-      {/* Модальное окно для быстрого просмотра (опционально) */}
+      {/* Модальное окно для быстрого просмотра */}
       {selectedOpportunity && viewMode === 'map' && (
         <div className="quick-view-modal">
           <div className="modal-content">
@@ -318,9 +473,17 @@ const MainPage = () => {
               ×
             </button>
             <OpportunityCard
-              opportunity={selectedOpportunity}
+              opportunity={{
+                ...selectedOpportunity,
+                company: {
+                  name: selectedOpportunity.employer?.companyName,
+                  logo: selectedOpportunity.employer?.logoUrl
+                },
+                salary: selectedOpportunity.salaryFrom,
+                tags: selectedOpportunity.tags?.map(t => t.tag?.id) || []
+              }}
               isFavorite={isFavorite(selectedOpportunity.id)}
-              onFavoriteToggle={handleFavoriteToggle}
+              onFavoriteToggle={() => handleFavoriteToggle(selectedOpportunity)}
               variant="detailed"
             />
             <div className="modal-actions">
@@ -331,8 +494,9 @@ const MainPage = () => {
                   handleApply(selectedOpportunity.id);
                   setSelectedOpportunity(null);
                 }}
+                disabled={isApplied(selectedOpportunity.id) || applyLoading}
               >
-                Откликнуться
+                {isApplied(selectedOpportunity.id) ? 'Вы уже откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
               </Button>
             </div>
           </div>

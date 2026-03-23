@@ -1,58 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, 
-  Heart, 
-  Share2, 
-  Calendar, 
-  MapPin, 
-  Briefcase, 
-  DollarSign,
-  Users,
-  Globe,
-  Mail,
-  Phone,
-  ExternalLink,
-  Clock
+  ArrowLeft, Heart, Share2, DollarSign, Briefcase, 
+  MapPin, Calendar, Clock, Mail, Globe, Users, ExternalLink 
 } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import Button from '../../components/UI/Button/Button';
-import { opportunities, skillsTags } from '../../data/mockData';
 import { useFavorites } from '../../hooks/useFavorites';
+import { useAuth } from '../../contexts/AuthContext';
+import { useFetch } from '../../hooks/useFetch';
+import { getOpportunityById, getOpportunities, applyToOpportunity, getTags } from '../../api/services';
+import Footer from '../../components/Footer/Footer';
 import './OpportunityDetailPage.css';
-import { useAuth } from "../../contexts/AuthContext";
-
 
 const OpportunityDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [opportunity, setOpportunity] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [similarOpportunities, setSimilarOpportunities] = useState([]);
   const [hasApplied, setHasApplied] = useState(false);
-  const {IsAuth} = useAuth();
-  
+  const [skillsTags, setSkillsTags] = useState([]);
+  const { IsAuth, user } = useAuth();
   const { favorites, addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
-  useEffect(() => {
-    // Загружаем данные о возможности
-    const found = opportunities.find(opp => opp.id === parseInt(id));
-    if (found) {
-      setOpportunity(found);
-      
-      // Находим похожие (по тегам)
-      const similar = opportunities
-        .filter(opp => opp.id !== found.id && 
-          opp.tags.some(tag => found.tags.includes(tag)))
-        .slice(0, 3);
-      setSimilarOpportunities(similar);
-    }
-    setLoading(false);
+  
+  // Загружаем теги
+  const [fetchTags] = useFetch(async () => {
+    const response = await getTags({ category: 'technology' });
+    setSkillsTags(response);
+    return response;
+  });
 
-    // Проверяем, откликался ли пользователь
-    const applied = JSON.parse(localStorage.getItem('applied') || '[]');
-    setHasApplied(applied.some(item => item.id === parseInt(id)));
+  // Загружаем детали возможности
+  const [fetchOpportunity, opportunityLoading, opportunityError] = useFetch(async () => {
+    const response = await getOpportunityById(id);
+    setOpportunity(response);
+    return response;
+  });
+
+  // Загружаем похожие возможности
+  const [fetchSimilar] = useFetch(async () => {
+    if (!opportunity) return;
+    
+    const params = {
+      tagIds: opportunity.tags?.map(t => t.tagId) || [],
+      limit: 3
+    };
+    
+    const response = await getOpportunities(params);
+    // Фильтруем текущую возможность
+    const filtered = response.data.filter(opp => opp.id !== opportunity.id);
+    setSimilarOpportunities(filtered.slice(0, 3));
+  });
+
+  // Проверяем, откликался ли пользователь
+  const [checkApplication] = useFetch(async () => {
+    if (!IsAuth || !user) return;
+    
+    // TODO: Запрос на проверку отклика
+    // const response = await checkIfApplied(id);
+    // setHasApplied(response.isApplied);
+    
+    // Пока заглушка
+    setHasApplied(false);
+  });
+
+  useEffect(() => {
+    fetchTags();
+    fetchOpportunity();
   }, [id]);
+
+  useEffect(() => {
+    if (opportunity) {
+      fetchSimilar();
+      checkApplication();
+    }
+  }, [opportunity]);
 
   const handleFavoriteToggle = () => {
     if (!opportunity) return;
@@ -64,15 +87,18 @@ const OpportunityDetailPage = () => {
     }
   };
 
+  const [applyFunc, applyLoading] = useFetch(async () => {
+    await applyToOpportunity(opportunity.id);
+    setHasApplied(true);
+    alert('Вы успешно откликнулись на возможность!');
+  });
+
   const handleApply = () => {
-      if (IsAuth == false){
-        alert('Вы не можете откликнуться на возможность! Войдите в аккаунт.');
-      }
-      else{
-          // Для авторизованных посслыаем запрос
-          setHasApplied(true);
-          // запрос для авторизованных      
-       }
+    if (!IsAuth) {
+      alert('Войдите в аккаунт, чтобы откликнуться');
+      return;
+    }
+    applyFunc();
   };
 
   const handleShare = () => {
@@ -90,24 +116,25 @@ const OpportunityDetailPage = () => {
 
   const getTypeLabel = (type) => {
     const types = {
-      internship: { label: 'Стажировка', icon: '🎓', color: '#18A3B7' },
-      vacancy: { label: 'Вакансия', icon: '💼', color: '#5AA5CD' },
-      mentorship: { label: 'Менторство', icon: '🤝', color: '#6F71A1' },
-      event: { label: 'Мероприятие', icon: '🎉', color: '#27E6EC' }
+      INTERNSHIP: { label: 'Стажировка', icon: '🎓', color: '#18A3B7' },
+      VACANCY_JUNIOR: { label: 'Вакансия', icon: '💼', color: '#5AA5CD' },
+      MENTORSHIP: { label: 'Менторство', icon: '🤝', color: '#6F71A1' },
+      CAREER_EVENT: { label: 'Мероприятие', icon: '🎉', color: '#27E6EC' }
     };
     return types[type] || { label: type, icon: '📌', color: '#1E536E' };
   };
 
   const getFormatLabel = (format) => {
     const formats = {
-      office: { label: 'В офисе', icon: '🏢' },
-      remote: { label: 'Удаленно', icon: '🏠' },
-      hybrid: { label: 'Гибрид', icon: '🔄' }
+      OFFICE: { label: 'В офисе', icon: '🏢' },
+      REMOTE: { label: 'Удаленно', icon: '🏠' },
+      HYBRID: { label: 'Гибрид', icon: '🔄' }
     };
     return formats[format] || { label: format, icon: '📍' };
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'Не указана';
     return new Date(dateString).toLocaleDateString('ru-RU', {
       day: 'numeric',
       month: 'long',
@@ -115,16 +142,15 @@ const OpportunityDetailPage = () => {
     });
   };
 
-  const formatSalary = (salary) => {
-    if (!salary) return 'Не указана';
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      maximumFractionDigits: 0
-    }).format(salary);
+  const formatSalary = (salaryFrom, salaryTo) => {
+    if (!salaryFrom && !salaryTo) return 'Не указана';
+    if (salaryFrom && salaryTo) return `${salaryFrom.toLocaleString()} - ${salaryTo.toLocaleString()} ₽`;
+    if (salaryFrom) return `от ${salaryFrom.toLocaleString()} ₽`;
+    if (salaryTo) return `до ${salaryTo.toLocaleString()} ₽`;
+    return 'Не указана';
   };
 
-  if (loading) {
+  if (opportunityLoading) {
     return (
       <div className="detail-page">
         <Header />
@@ -136,7 +162,7 @@ const OpportunityDetailPage = () => {
     );
   }
 
-  if (!opportunity) {
+  if (opportunityError || !opportunity) {
     return (
       <div className="detail-page">
         <Header />
@@ -147,6 +173,7 @@ const OpportunityDetailPage = () => {
             Вернуться на главную
           </Button>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -173,18 +200,18 @@ const OpportunityDetailPage = () => {
             <div className="detail-header">
               <div className="company-badge">
                 <img 
-                  src={opportunity.company.logo} 
-                  alt={opportunity.company.name}
+                  src={opportunity.employer?.logoUrl || 'https://via.placeholder.com/80x80?text=Company'} 
+                  alt={opportunity.employer?.companyName}
                   className="company-logo-large"
                   onError={(e) => {
                     e.target.src = 'https://via.placeholder.com/80x80?text=Company';
                   }}
                 />
                 <div className="company-info">
-                  <h2 className="company-name">{opportunity.company.name}</h2>
+                  <h2 className="company-name">{opportunity.employer?.companyName}</h2>
                   <div className="company-meta">
-                    <span className="company-industry">{opportunity.company.industry}</span>
-                    {opportunity.company.verified && (
+                    <span className="company-industry">{opportunity.employer?.industry || 'IT'}</span>
+                    {opportunity.employer?.verificationStatus === 'VERIFIED' && (
                       <span className="verified-badge">✓ Верифицирован</span>
                     )}
                   </div>
@@ -219,22 +246,19 @@ const OpportunityDetailPage = () => {
                 <span className="badge">
                   {formatInfo.icon} {formatInfo.label}
                 </span>
-                {opportunity.level && (
-                  <span className="badge">
-                    👤 {opportunity.level}
-                  </span>
-                )}
               </div>
             </div>
 
             {/* Ключевая информация */}
             <div className="info-grid">
-              {opportunity.salary && (
+              {(opportunity.salaryFrom || opportunity.salaryTo) && (
                 <div className="info-card salary-card">
                   <DollarSign size={20} />
                   <div className="info-content">
                     <span className="info-label">Заработная плата</span>
-                    <span className="info-value">{formatSalary(opportunity.salary)}</span>
+                    <span className="info-value">
+                      {formatSalary(opportunity.salaryFrom, opportunity.salaryTo)}
+                    </span>
                   </div>
                 </div>
               )}
@@ -244,9 +268,9 @@ const OpportunityDetailPage = () => {
                 <div className="info-content">
                   <span className="info-label">Тип занятости</span>
                   <span className="info-value">
-                    {opportunity.employmentType === 'full-time' ? 'Полная' : 
-                     opportunity.employmentType === 'part-time' ? 'Частичная' : 
-                     opportunity.employmentType === 'project' ? 'Проектная' : 'Не указано'}
+                    {opportunity.type === 'INTERNSHIP' ? 'Стажировка' :
+                     opportunity.type === 'VACANCY_JUNIOR' ? 'Полная занятость' :
+                     opportunity.type === 'MENTORSHIP' ? 'Менторство' : 'Разовое мероприятие'}
                   </span>
                 </div>
               </div>
@@ -263,7 +287,7 @@ const OpportunityDetailPage = () => {
                 <Calendar size={20} />
                 <div className="info-content">
                   <span className="info-label">Опубликовано</span>
-                  <span className="info-value">{formatDate(opportunity.publicationDate)}</span>
+                  <span className="info-value">{formatDate(opportunity.publishedAt)}</span>
                 </div>
               </div>
             </div>
@@ -274,21 +298,15 @@ const OpportunityDetailPage = () => {
               <p className="description-text">{opportunity.description}</p>
             </div>
 
-            {/* Требования */}
-            <div className="detail-section">
-              <h3>Требования к кандидату</h3>
-              <p className="requirements-text">{opportunity.requirements}</p>
-            </div>
-
             {/* Навыки */}
             <div className="detail-section">
               <h3>Ключевые навыки</h3>
               <div className="tags-large">
-                {opportunity.tags.map(tagId => {
-                  const tag = skillsTags.find(t => t.id === tagId);
+                {opportunity.tags?.map(tag => {
+                  const tagInfo = skillsTags.find(t => t.id === tag.tagId);
                   return (
-                    <span key={tagId} className="tag-large">
-                      {tag?.name || `Навык ${tagId}`}
+                    <span key={tag.tagId} className="tag-large">
+                      {tagInfo?.name || tag.tag?.name || 'Навык'}
                     </span>
                   );
                 })}
@@ -296,7 +314,7 @@ const OpportunityDetailPage = () => {
             </div>
 
             {/* Даты */}
-            {(opportunity.expirationDate || opportunity.eventDate) && (
+            {(opportunity.expiresAt || opportunity.eventDate) && (
               <div className="detail-section">
                 <h3>Сроки</h3>
                 <div className="dates">
@@ -308,7 +326,7 @@ const OpportunityDetailPage = () => {
                   ) : (
                     <div className="date-item">
                       <Clock size={18} />
-                      <span>Срок действия до: {formatDate(opportunity.expirationDate)}</span>
+                      <span>Срок действия до: {formatDate(opportunity.expiresAt)}</span>
                     </div>
                   )}
                 </div>
@@ -316,30 +334,32 @@ const OpportunityDetailPage = () => {
             )}
 
             {/* Контакты */}
-            <div className="detail-section">
-              <h3>Контакты</h3>
-              <div className="contacts">
-                <div className="contact-item">
-                  <Mail size={18} />
-                  <a href={`mailto:${opportunity.contacts}`} className="contact-link">
-                    {opportunity.contacts}
-                  </a>
-                </div>
-                {opportunity.company.website && (
+            {opportunity.contactEmail && (
+              <div className="detail-section">
+                <h3>Контакты</h3>
+                <div className="contacts">
                   <div className="contact-item">
-                    <Globe size={18} />
-                    <a 
-                      href={opportunity.company.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="contact-link"
-                    >
-                      {opportunity.company.website}
+                    <Mail size={18} />
+                    <a href={`mailto:${opportunity.contactEmail}`} className="contact-link">
+                      {opportunity.contactEmail}
                     </a>
                   </div>
-                )}
+                  {opportunity.employer?.websiteUrl && (
+                    <div className="contact-item">
+                      <Globe size={18} />
+                      <a 
+                        href={opportunity.employer.websiteUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="contact-link"
+                      >
+                        {opportunity.employer.websiteUrl}
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Правая колонка - действия и похожее */}
@@ -352,9 +372,9 @@ const OpportunityDetailPage = () => {
                 size="large"
                 fullWidth
                 onClick={handleApply}
-                disabled={hasApplied}
+                disabled={hasApplied || applyLoading}
               >
-                {hasApplied ? '✓ Вы откликнулись' : 'Откликнуться'}
+                {hasApplied ? '✓ Вы откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
               </Button>
               <Button
                 variant="outline"
@@ -370,7 +390,7 @@ const OpportunityDetailPage = () => {
             {/* Информация о компании */}
             <div className="company-card">
               <h3>О компании</h3>
-              <p className="company-description">{opportunity.company.description}</p>
+              <p className="company-description">{opportunity.employer?.description || 'Информация о компании отсутствует'}</p>
               <div className="company-stats">
                 <div className="stat">
                   <Users size={16} />
@@ -378,14 +398,14 @@ const OpportunityDetailPage = () => {
                 </div>
                 <div className="stat">
                   <MapPin size={16} />
-                  <span>{opportunity.company.city}</span>
+                  <span>{opportunity.employer?.city || opportunity.city}</span>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="medium"
                 fullWidth
-                onClick={() => navigate(`/company/${opportunity.company.id}`)}
+                onClick={() => navigate(`/company/${opportunity.employer?.id}`)}
               >
                 Все вакансии компании
                 <ExternalLink size={16} />
@@ -404,13 +424,16 @@ const OpportunityDetailPage = () => {
                       onClick={() => navigate(`/opportunity/${similar.id}`)}
                     >
                       <img 
-                        src={similar.company.logo} 
-                        alt={similar.company.name}
+                        src={similar.employer?.logoUrl || 'https://via.placeholder.com/40x40?text=Company'} 
+                        alt={similar.employer?.companyName}
                         className="similar-logo"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/40x40?text=Company';
+                        }}
                       />
                       <div className="similar-info">
                         <h4>{similar.title}</h4>
-                        <p>{similar.company.name}</p>
+                        <p>{similar.employer?.companyName}</p>
                       </div>
                     </div>
                   ))}
@@ -420,6 +443,7 @@ const OpportunityDetailPage = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

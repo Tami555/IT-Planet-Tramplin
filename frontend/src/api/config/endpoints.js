@@ -12,3 +12,28 @@ export const USER_ENDPOINTS = {
   REFRESH: '/auth/refresh',
   LOGOUT: '/auth/logout'
 };
+
+export const OPPORTUNITY_ENDPOINTS = {
+  GET_ALL: '/opportunities',
+  GET_BY_ID: '/opportunities/:id',
+  CREATE: '/opportunities',
+  UPDATE: '/opportunities/:id',
+  DELETE: '/opportunities/:id',
+
+  APPLY: '/applicants/me/applications',
+  DELETE_APPLY: '/applicants/me/applications/:id',
+  FAVORITE: '/applicants/me/favorites',
+  DELETE_FAVORITE: '/applicants/me/favorites/:id'
+};
+
+export const APPLICANT_ENDPOINTS = {
+  GET_ME: '/applicants/me',
+  GET_APPLICATIONS: '/applicants/me/applications',
+  UPDATE_PROFILE: '/applicants/me'
+};
+
+export const TAG_ENDPOINTS = {
+  GET_ALL: '/tags',
+  CREATE: '/tags',
+  DELETE: '/tags/:id'
+};
