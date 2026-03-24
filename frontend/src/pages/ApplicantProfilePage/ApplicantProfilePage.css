@@ -1,0 +1,842 @@
+.applicant-profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-container {
+  flex: 1;
+  padding: 40px 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Хлебные крошки */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 30px;
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.breadcrumbs span {
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.breadcrumbs span:not(.current):hover {
+  color: var(--primary-accent);
+}
+
+.breadcrumbs .current {
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+/* Сетка профиля */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 30px;
+}
+
+/* Левая колонка */
+.profile-sidebar {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.avatar-section {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 20px;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary-accent);
+  transition: transform var(--transition-fast);
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.avatar-upload {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: white;
+}
+
+.avatar-upload:hover {
+  background: var(--secondary-accent);
+  transform: scale(1.1);
+}
+
+.avatar-upload input {
+  display: none;
+}
+
+.avatar-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background: var(--error);
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: white;
+}
+
+.avatar-delete:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+/* Статистика */
+.profile-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  flex: 1;
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-accent);
+}
+
+.stat-item svg {
+  color: var(--primary-accent);
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Кнопки */
+.privacy-toggle,
+.logout-btn {
+  margin-bottom: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.logout-btn {
+  color: var(--error);
+}
+
+.logout-btn:hover {
+  background: rgba(229, 115, 115, 0.1);
+}
+
+/* Правая колонка */
+.profile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.info-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(24, 163, 183, 0.2);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.card-header h2,
+.info-card h2 {
+  font-size: 20px;
+  color: var(--primary-dark);
+  margin: 0;
+}
+
+.edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid rgba(24, 163, 183, 0.3);
+  border-radius: var(--border-radius-md);
+  color: var(--primary-accent);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 14px;
+}
+
+.edit-btn:hover {
+  background: var(--primary-accent);
+  color: white;
+  border-color: var(--primary-accent);
+  transform: translateY(-2px);
+}
+
+/* Информационные строки */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.info-row svg {
+  color: var(--primary-accent);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.info-row label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.info-row p {
+  font-size: 14px;
+  color: var(--text-dark);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* Био */
+.bio-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dark);
+  word-break: break-word;
+}
+
+/* Навыки */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-tag {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.skill-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Портфолио */
+.portfolio-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.portfolio-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(24, 163, 183, 0.05);
+  border-radius: var(--border-radius-md);
+  color: var(--primary-accent);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  word-break: break-all;
+  font-size: 14px;
+}
+
+.portfolio-link:hover {
+  background: rgba(24, 163, 183, 0.1);
+  transform: translateX(5px);
+}
+
+/* Резюме */
+.resume-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.resume-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: var(--primary-accent);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+  font-size: 14px;
+}
+
+.resume-link:hover {
+  background: var(--secondary-accent);
+  transform: translateY(-2px);
+}
+
+.delete-resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: none;
+  border: 1px solid var(--error);
+  border-radius: var(--border-radius-md);
+  color: var(--error);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 14px;
+}
+
+.delete-resume:hover {
+  background: var(--error);
+  color: white;
+}
+
+.upload-resume {
+  text-align: center;
+  width: 100%;
+}
+
+.upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: var(--primary-accent);
+  color: white;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 14px;
+}
+
+.upload-label:hover {
+  background: var(--secondary-accent);
+  transform: translateY(-2px);
+}
+
+.upload-label input {
+  display: none;
+}
+
+.uploading-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.error-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--error);
+}
+
+/* Состояния загрузки и ошибок */
+.loading-state,
+.error-state,
+.not-applicant {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+}
+
+.loading-state .spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(24, 163, 183, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary-accent);
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.not-applicant svg {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.not-applicant h2 {
+  font-size: 24px;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+
+.not-applicant p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* ========== АДАПТИВНЫЙ ДИЗАЙН ========== */
+
+/* Планшеты (768px - 1024px) */
+@media (max-width: 1024px) {
+  .profile-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .profile-sidebar {
+    position: static;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .profile-stats {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .stat-item {
+    min-width: calc(33.333% - 12px);
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .resume-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .resume-link,
+  .delete-resume {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Мобильные телефоны (до 768px) */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 20px 16px;
+  }
+  
+  .breadcrumbs {
+    margin-bottom: 20px;
+    font-size: 12px;
+  }
+  
+  /* Левая колонка */
+  .profile-sidebar {
+    max-width: 100%;
+  }
+  
+  .avatar-section {
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .avatar-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .avatar-upload {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .avatar-upload svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Статистика */
+  .profile-stats {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+    min-width: calc(33.333% - 8px);
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
+  }
+  
+  .stat-item svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Кнопки */
+  .privacy-toggle,
+  .logout-btn {
+    margin-bottom: 10px;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+  
+  /* Правая колонка */
+  .profile-main {
+    gap: 16px;
+  }
+  
+  .info-card {
+    padding: 16px;
+  }
+  
+  .card-header {
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+  }
+  
+  .card-header h2,
+  .info-card h2 {
+    font-size: 18px;
+  }
+  
+  .edit-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .edit-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Информационные строки */
+  .info-grid {
+    gap: 12px;
+  }
+  
+  .info-row {
+    gap: 10px;
+  }
+  
+  .info-row svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .info-row label {
+    font-size: 11px;
+  }
+  
+  .info-row p {
+    font-size: 13px;
+  }
+  
+  /* Био */
+  .bio-text {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  /* Навыки */
+  .skills-list {
+    gap: 8px;
+  }
+  
+  .skill-tag {
+    padding: 5px 12px;
+    font-size: 12px;
+    white-space: normal;
+    word-break: keep-all;
+  }
+  
+  /* Портфолио */
+  .portfolio-links {
+    gap: 10px;
+  }
+  
+  .portfolio-link {
+    padding: 10px;
+    font-size: 13px;
+  }
+  
+  .portfolio-link svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Резюме */
+  .resume-link,
+  .delete-resume,
+  .upload-label {
+    padding: 10px 16px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .resume-link svg,
+  .delete-resume svg,
+  .upload-label svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Состояния */
+  .loading-state,
+  .error-state,
+  .not-applicant {
+    padding: 40px 16px;
+  }
+  
+  .loading-state .spinner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .not-applicant h2 {
+    font-size: 20px;
+  }
+  
+  .not-applicant p {
+    font-size: 14px;
+  }
+  
+  .not-applicant svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Очень маленькие телефоны (до 480px) */
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 16px 12px;
+  }
+  
+  .avatar-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-stats {
+    gap: 8px;
+  }
+  
+  .stat-item {
+    padding: 10px;
+    min-width: calc(33.333% - 6px);
+  }
+  
+  .stat-value {
+    font-size: 16px;
+  }
+  
+  .stat-label {
+    font-size: 10px;
+  }
+  
+  .stat-item svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .card-header h2,
+  .info-card h2 {
+    font-size: 16px;
+  }
+  
+  .info-card {
+    padding: 14px;
+  }
+  
+  .skill-tag {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .portfolio-link {
+    font-size: 12px;
+    word-break: break-all;
+  }
+  
+  .resume-link,
+  .delete-resume,
+  .upload-label {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Альбомная ориентация на телефонах */
+@media (max-width: 768px) and (orientation: landscape) {
+  .profile-grid {
+    gap: 20px;
+  }
+  
+  .profile-sidebar {
+    max-width: 100%;
+  }
+  
+  .avatar-section {
+    padding: 16px;
+  }
+  
+  .avatar-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-stats {
+    margin-bottom: 12px;
+  }
+  
+  .info-card {
+    padding: 14px;
+  }
+}
+
+/* Touch-friendly увеличение размера кликабельных элементов */
+@media (hover: none) and (pointer: coarse) {
+  .stat-item,
+  .edit-btn,
+  .privacy-toggle,
+  .logout-btn,
+  .avatar-upload,
+  .resume-link,
+  .delete-resume,
+  .upload-label,
+  .portfolio-link {
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .stat-item:active,
+  .edit-btn:active,
+  .privacy-toggle:active,
+  .logout-btn:active,
+  .avatar-upload:active,
+  .resume-link:active,
+  .delete-resume:active,
+  .upload-label:active,
+  .portfolio-link:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+  }
+}
+
+/* Улучшение скролла на мобильных */
+@media (max-width: 768px) {
+  .applicant-profile-page {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .skills-list {
+    -webkit-overflow-scrolling: touch;
+  }
+}

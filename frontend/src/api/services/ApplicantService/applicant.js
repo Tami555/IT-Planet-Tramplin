@@ -31,3 +31,47 @@ export const getCurrentApplicant = async () => {
     handleApiError
   );
 };
+
+// Обновить профиль соискателя
+export const updateApplicantProfile = async (profileData) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.patch(getBackendUrl(APPLICANT_ENDPOINTS.UPDATE_PROFILE), profileData);
+    return response.data;
+  });
+};
+
+// Обновить настройки приватности
+export const updatePrivacySettings = async (privacyData) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.patch(`${getBackendUrl(APPLICANT_ENDPOINTS.UPDATE_PROFILE)}/privacy`, privacyData);
+    return response.data;
+  });
+};
+
+// Загрузить аватар
+export const uploadAvatar = async (file) => {
+  return await apiRequest(async () => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post(`${getBackendUrl(APPLICANT_ENDPOINTS.UPDATE_PROFILE)}/avatar`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  });
+};
+
+// Загрузить резюме
+export const uploadResume = async (file) => {
+  return await apiRequest(async () => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post(`${getBackendUrl(APPLICANT_ENDPOINTS.UPDATE_PROFILE)}/resume`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  });
+}

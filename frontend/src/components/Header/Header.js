@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { User, LogIn, Home, Heart, Briefcase } from 'lucide-react';
+import { Home, Heart, Briefcase, LogIn } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
-import { logout } from '../../api/services';
+import { default_user_ava } from '../../images';
+import { useFetch } from '../../hooks/useFetch';
+import { getCurrentApplicant } from '../../api/services';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { IsAuth, User, ClearUser, IsApplicant } = useAuth();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { IsAuth, IsApplicant } = useAuth();
+  const [currentUser, setCurrentUser] = useState({});
+  const API_URL = 'http://localhost:3000';
 
   const isActive = (path) => {
     return location.pathname === path;
   };
 
-  const logout_func = async () => {
-    await logout();
-    ClearUser();
-    window.location = '/';
-  }
+  const [getCurrentUser, loadingUser] = useFetch(async () => {
+    if (IsApplicant){
+      const res = await getCurrentApplicant();
+      setCurrentUser(res);
+    }
+    return;
+  });
+  useEffect(() => {getCurrentUser()}, [])
 
   return (
     <header className="header">
@@ -39,7 +45,7 @@ const Header = () => {
               <Home size={18} />
               <span>Главная</span>
             </Link>
-            { (IsApplicant == true || IsAuth == false) && 
+            {(IsApplicant === true || IsAuth === false) && (
               <Link 
                 to="/favorites" 
                 className={`nav-link ${isActive('/favorites') ? 'active' : ''}`}
@@ -47,7 +53,7 @@ const Header = () => {
                 <Heart size={18} />
                 <span>Избранное</span>
               </Link>
-            }
+            )}
             <Link 
               to="/companies" 
               className={`nav-link ${isActive('/companies') ? 'active' : ''}`}
@@ -60,30 +66,16 @@ const Header = () => {
 
         <div className="header-right">
           {IsAuth ? (
-            <div className="user-menu" onMouseLeave={() => setIsDropdownOpen(false)}>
+            <div className="user-menu">
               <button 
                 className="user-avatar"
-                onMouseEnter={() => setIsDropdownOpen(true)}
+                onClick={() => navigate('/profile')}
               >
                 <img 
-                  src={User?.logo || "https://img.freepik.com/premium-photo/cool-hacker-cat_1231246-6534.jpg?semt=ais_hybrid" } 
-                  alt={User?.first_name || 'User'}
+                  src={currentUser?.avatarUrl ? `${API_URL}${currentUser?.avatarUrl}` : default_user_ava} 
+                  alt={currentUser?.firstName || 'User'}
                 />
               </button>
-              {isDropdownOpen && (
-                <div className="user-dropdown" onMouseEnter={() => setIsDropdownOpen(true)}>
-                  <div className="dropdown-user-info">
-                    <strong>{User?.first_name} {User?.last_name}</strong>
-                    <span>{User?.email}</span>
-                  </div>
-                  <div className="dropdown-divider"></div>
-                  <Link to="/profile" className="dropdown-item">Профиль</Link>
-                  <Link to="/dashboard" className="dropdown-item">Личный кабинет</Link>
-                  <Link to="/settings" className="dropdown-item">Настройки</Link>
-                  <div className="dropdown-divider"></div>
-                  <button className="dropdown-item logout" onClick={logout_func}>Выйти</button>
-                </div>
-              )}
             </div>
           ) : (
             <div className="auth-buttons">

@@ -5,6 +5,7 @@ import CompaniesPage from '../pages/CompaniesPage/CompaniesPage';
 import LoginPage from '../pages/LoginPage/LoginPage';
 import RegisterPage from '../pages/RegisterPage/RegisterPage';
 import LoginAdminPage from '../pages/LoginPage/LoginAdminPage';
+import ApplicantProfilePage from '../pages/ApplicantProfilePage/ApplicantProfilePage';
 
 
 export const common_routes = [
@@ -24,5 +25,6 @@ export const no_authorized_routes = [
 export const authorized_routes = [
     { path: '/login', element: MainPage },
     { path: '/register', element: MainPage },
+    { path: '/profile', element: ApplicantProfilePage },
     { path: '*', element: MainPage },
 ];
