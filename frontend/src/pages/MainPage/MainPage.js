@@ -27,7 +27,7 @@ const cityCoordinates = {
 
 const MainPage = () => {
   const navigate = useNavigate();
-  const { IsAuth, user } = useAuth();
+  const { IsAuth, User, IsApplicant } = useAuth();
   const [viewMode, setViewMode] = useState('both');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
@@ -59,16 +59,16 @@ const MainPage = () => {
   
   // Загружаем отклики пользователя (только для авторизованных)
   const [fetchApplications, applicationsLoading] = useFetch(async () => {
-    const response = await getUserApplications(1, 100);
-    setAppliedOpportunities(response.data || []);
+    const response = await getUserApplications(1, 1000);
+    setAppliedOpportunities(response?.data);
     return response;
   });
   
   useEffect(() => {
-    if (IsAuth && user) {
+    if (IsAuth && IsApplicant && User) {
       fetchApplications();
     }
-  }, [IsAuth, user]);
+  }, [IsAuth, User]);
   
   // Запрос на получение возможностей с пагинацией
   const [fetchOpportunities, opportunitiesLoading, opportunitiesError] = useFetch(async () => {

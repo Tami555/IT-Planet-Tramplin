@@ -9,9 +9,10 @@ import Button from '../../components/UI/Button/Button';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFetch } from '../../hooks/useFetch';
-import { getOpportunityById, getOpportunities, applyToOpportunity, getTags } from '../../api/services';
+import { getOpportunityById, getOpportunities, applyToOpportunity, getTags, getUserApplications } from '../../api/services';
 import Footer from '../../components/Footer/Footer';
 import './OpportunityDetailPage.css';
+
 
 const OpportunityDetailPage = () => {
   const { id } = useParams();
@@ -20,9 +21,8 @@ const OpportunityDetailPage = () => {
   const [similarOpportunities, setSimilarOpportunities] = useState([]);
   const [hasApplied, setHasApplied] = useState(false);
   const [skillsTags, setSkillsTags] = useState([]);
-  const { IsAuth, user } = useAuth();
-  const { favorites, addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
-
+  const { IsAuth, IsApplicant } = useAuth();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   
   // Загружаем теги
   const [fetchTags] = useFetch(async () => {
@@ -54,15 +54,12 @@ const OpportunityDetailPage = () => {
   });
 
   // Проверяем, откликался ли пользователь
-  const [checkApplication] = useFetch(async () => {
-    if (!IsAuth || !user) return;
+  const [checkApplication, loadingcheckApplication] = useFetch(async () => {
+    if (!IsAuth || !IsApplicant) return;
     
-    // TODO: Запрос на проверку отклика
-    // const response = await checkIfApplied(id);
-    // setHasApplied(response.isApplied);
-    
-    // Пока заглушка
-    setHasApplied(false);
+    // Запрос на проверку отклика
+    const response = await getUserApplications(1, 1000)
+    setHasApplied(response?.data?.map(a => a?.opportunityId).includes(opportunity?.id));
   });
 
   useEffect(() => {
@@ -77,7 +74,7 @@ const OpportunityDetailPage = () => {
     }
   }, [opportunity]);
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = async () => {
     if (!opportunity) return;
     
     if (isFavorite(opportunity.id)) {
@@ -219,13 +216,15 @@ const OpportunityDetailPage = () => {
               </div>
 
               <div className="header-actions">
-                <button 
-                  className={`action-btn ${isFavorite(opportunity.id) ? 'active' : ''}`}
-                  onClick={handleFavoriteToggle}
-                  title={isFavorite(opportunity.id) ? 'Удалить из избранного' : 'Добавить в избранное'}
-                >
-                  <Heart size={24} fill={isFavorite(opportunity.id) ? 'currentColor' : 'none'} />
-                </button>
+                {(IsApplicant == true || IsAuth == false) &&
+                    <button 
+                      className={`action-btn ${isFavorite(opportunity.id) ? 'active' : ''}`}
+                      onClick={handleFavoriteToggle}
+                      title={isFavorite(opportunity.id) ? 'Удалить из избранного' : 'Добавить в избранное'}
+                    >
+                      <Heart size={24} fill={isFavorite(opportunity.id) ? 'currentColor' : 'none'} />
+                    </button>   
+                }
                 <button 
                   className="action-btn"
                   onClick={handleShare}
@@ -365,28 +364,30 @@ const OpportunityDetailPage = () => {
           {/* Правая колонка - действия и похожее */}
           <div className="detail-sidebar">
             {/* Блок с действиями */}
-            <div className="action-card">
-              <h3>Действия</h3>
-              <Button
-                variant={hasApplied ? 'outline' : 'primary'}
-                size="large"
-                fullWidth
-                onClick={handleApply}
-                disabled={hasApplied || applyLoading}
-              >
-                {hasApplied ? '✓ Вы откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
-              </Button>
-              <Button
-                variant="outline"
-                size="large"
-                fullWidth
-                onClick={handleFavoriteToggle}
-              >
-                <Heart size={18} fill={isFavorite(opportunity.id) ? 'currentColor' : 'none'} />
-                {isFavorite(opportunity.id) ? 'В избранном' : 'В избранное'}
-              </Button>
-            </div>
-
+            {(IsApplicant == true || IsAuth == false) &&
+              <div className="action-card">
+                <h3>Действия</h3>
+                <Button
+                  variant={hasApplied ? 'outline' : 'primary'}
+                  size="large"
+                  fullWidth
+                  onClick={handleApply}
+                  disabled={hasApplied || applyLoading}
+                >
+                  {hasApplied ? '✓ Вы откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="large"
+                  fullWidth
+                  onClick={handleFavoriteToggle}
+                >
+                  <Heart size={18} fill={isFavorite(opportunity.id) ? 'currentColor' : 'none'} />
+                  {isFavorite(opportunity.id) ? 'В избранном' : 'В избранное'}
+                </Button>
+              </div>   
+            }
+            
             {/* Информация о компании */}
             <div className="company-card">
               <h3>О компании</h3>

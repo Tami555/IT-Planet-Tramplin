@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import './OpportunityCard.css';
+import { useAuth } from '../../contexts/AuthContext';
 
 
 const OpportunityCard = ({ 
@@ -12,7 +13,7 @@ const OpportunityCard = ({
   variant = 'default', // default, compact, detailed
 }) => {
   const navigate = useNavigate();
-
+  const { IsApplicant, IsAuth } = useAuth();
   const handleCardClick = (e) => {
     if (e.target.closest('.favorite-btn')) {
       return;
@@ -72,13 +73,16 @@ const OpportunityCard = ({
             <span className="opportunity-type">{getTypeLabel(opportunity.type)}</span>
           </div>
         </div>
-        <button 
-          className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-          onClick={handleFavoriteClick}
-          aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
-        >
-          <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-        </button>
+        {
+          (IsApplicant == true || IsAuth == false) && 
+          <button 
+            className={`favorite-btn ${isFavorite ? 'active' : ''}`}
+            onClick={handleFavoriteClick}
+            aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
+          >
+            <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+          </button>
+        }
       </div>
 
       <div className="card-body">

@@ -18,18 +18,19 @@ export const OPPORTUNITY_ENDPOINTS = {
   GET_BY_ID: '/opportunities/:id',
   CREATE: '/opportunities',
   UPDATE: '/opportunities/:id',
-  DELETE: '/opportunities/:id',
-
-  APPLY: '/applicants/me/applications',
-  DELETE_APPLY: '/applicants/me/applications/:id',
-  FAVORITE: '/applicants/me/favorites',
-  DELETE_FAVORITE: '/applicants/me/favorites/:id'
+  DELETE: '/opportunities/:id'
 };
 
 export const APPLICANT_ENDPOINTS = {
   GET_ME: '/applicants/me',
   GET_APPLICATIONS: '/applicants/me/applications',
-  UPDATE_PROFILE: '/applicants/me'
+  UPDATE_PROFILE: '/applicants/me',
+
+  APPLY: '/applicants/me/applications',
+  DELETE_APPLY: '/applicants/me/applications/:id',
+  
+  FAVORITE: '/applicants/me/favorites',
+  DELETE_FAVORITE: '/applicants/me/favorites/:id'
 };
 
 export const TAG_ENDPOINTS = {

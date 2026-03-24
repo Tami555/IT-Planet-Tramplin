@@ -8,42 +8,62 @@ import Button from '../../components/UI/Button/Button';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAuth } from '../../contexts/AuthContext';
 import './FavoritesPage.css';
+import { useFetch } from '../../hooks/useFetch';
+import { getUserApplications } from '../../api/services';
 
 
 const FavoritesPage = () => {
   const navigate = useNavigate();
-  const { IsAuth } = useAuth();
+  const { IsAuth, IsApplicant, User } = useAuth();
   const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
   const [appliedOpportunities, setAppliedOpportunities] = useState([]);
 
-  // Загружаем отклики
+  // Загружаем отклики пользователя (только для авторизованных)
+  const [fetchApplications, applicationsLoading] = useFetch(async () => {
+    const response = await getUserApplications(1, 1000);
+    setAppliedOpportunities(response?.data);
+    return response;
+  });
+    
   useEffect(() => {
-    if (!IsAuth) {
-      const storedApplied = localStorage.getItem('applied');
-      if (storedApplied) {
-        try {
-          setAppliedOpportunities(JSON.parse(storedApplied));
-        } catch (e) {
-          console.error('Error parsing applied:', e);
-        }
-      }
-    } else {
-      // Для авторизованных - позже
+    if (IsAuth && IsApplicant && User) {
+      fetchApplications();
     }
-  }, [IsAuth]);
+  }, [IsAuth, User]);
 
-  const handleFavoriteToggle = (opportunity) => {
-    removeFromFavorites(opportunity.id);
+  // Функция для получения объекта возможности из favorites
+  const getOpportunityObject = (favoriteItem) => {
+    if (!IsAuth) {
+      // Для неавторизованных - favoriteItem это сам объект возможности
+      return favoriteItem;
+    } else {
+      // Для авторизованных - у favoriteItem есть поле opportunity
+      return favoriteItem.opportunity;
+    }
+  };
+
+  const handleFavoriteToggle = (opportunityId) => {
+    removeFromFavorites(opportunityId);
   };
 
   const handleApply = (opportunityId) => {
-    const opportunity = favorites.find(fav => fav.id === opportunityId);
-    if (!opportunity) return;
-
+    const favoriteItem = favorites.find(fav => {
+      if (!IsAuth) {
+        return fav.id === opportunityId;
+      } else {
+        return fav.opportunityId === opportunityId;
+      }
+    });
+    
+    if (!favoriteItem) return;
+    
+    const opportunity = getOpportunityObject(favoriteItem);
+    
     if (!IsAuth) {
       alert('Вы не можете откликнуться на возможность! Войдите в аккаунт.');
     } else {
       // Для авторизованных - позже
+      console.log('Отклик на:', opportunity);
     }
   };
 
@@ -91,21 +111,25 @@ const FavoritesPage = () => {
         {/* Контент */}
         {favorites.length > 0 ? (
           <div className="favorites-grid">
-            {favorites.map(opportunity => {
-              const isApplied = appliedOpportunities.some(app => app.id === opportunity.id);
+            {favorites.map(favoriteItem => {
+              // Получаем правильный объект возможности
+              const opportunity = getOpportunityObject(favoriteItem);
+              const opportunityId = !IsAuth ? opportunity.id : favoriteItem.opportunityId;
+              const isApplied = appliedOpportunities.some(app => app.opportunityId === opportunityId);
+              
               return (
-                <div key={opportunity.id} className="favorite-item">
+                <div key={opportunityId} className="favorite-item">
                   <OpportunityCard
                     opportunity={opportunity}
                     isFavorite={true}
-                    onFavoriteToggle={handleFavoriteToggle}
+                    onFavoriteToggle={() => handleFavoriteToggle(opportunityId)}
                     variant="default"
                   />
                   <div className="favorite-actions">
                     <Button
                       variant={isApplied ? 'outline' : 'primary'}
                       size="small"
-                      onClick={() => handleApply(opportunity.id)}
+                      onClick={() => handleApply(opportunityId)}
                       disabled={isApplied}
                     >
                       {isApplied ? '✓ Откликнулись' : 'Откликнуться'}
@@ -113,7 +137,7 @@ const FavoritesPage = () => {
                     <Button
                       variant="ghost"
                       size="small"
-                      onClick={() => removeFromFavorites(opportunity.id)}
+                      onClick={() => handleFavoriteToggle(opportunityId)}
                     >
                       <Trash2 size={16} />
                       Удалить

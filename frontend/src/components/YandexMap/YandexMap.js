@@ -12,8 +12,7 @@ const YandexMap = ({
   initialLocation = [55.7558, 37.6176],
   zoom = 10,
   className = '',
-  theme = 'dark',
-  skillsTags = [] // добавляем пропс для тегов
+  theme = 'dark'
 }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -204,8 +203,8 @@ const YandexMap = ({
       const [lat, lng] = coordinates.split(',').map(Number);
       
       // Проверяем статусы для группы
-      const hasFavorite = group.some(opp => favorites.some(fav => fav.id === opp.id));
-      const hasApplied = group.some(opp => applied.some(app => app.id === opp.id));
+      const hasFavorite = group.some(opp => favorites.some(fav => fav.id === opp.id || fav.opportunityId == opp.id));
+      const hasApplied = group.some(opp => applied.some(app => app.opportunityId === opp.id));
       
       const markerIcon = getMarkerIconWithCount(group, hasFavorite, hasApplied);
       

@@ -9,7 +9,7 @@ import { logout } from '../../api/services';
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { IsAuth, User, ClearUser } = useAuth();
+  const { IsAuth, User, ClearUser, IsApplicant } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const isActive = (path) => {
@@ -39,13 +39,15 @@ const Header = () => {
               <Home size={18} />
               <span>Главная</span>
             </Link>
-            <Link 
-              to="/favorites" 
-              className={`nav-link ${isActive('/favorites') ? 'active' : ''}`}
-            >
-              <Heart size={18} />
-              <span>Избранное</span>
-            </Link>
+            { (IsApplicant == true || IsAuth == false) && 
+              <Link 
+                to="/favorites" 
+                className={`nav-link ${isActive('/favorites') ? 'active' : ''}`}
+              >
+                <Heart size={18} />
+                <span>Избранное</span>
+              </Link>
+            }
             <Link 
               to="/companies" 
               className={`nav-link ${isActive('/companies') ? 'active' : ''}`}

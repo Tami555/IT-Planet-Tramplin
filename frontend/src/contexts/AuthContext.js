@@ -14,9 +14,11 @@ export const AuthProvider = ({ children }) => {
   const [IsAuth, SetIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [User, SetUser] = useState(null);
+  const [IsApplicant, SetIsApplicant] = useState(false);
 
   const UpdateUserData = (data) => {
     SetUser(data);
+    SetIsApplicant(data?.role == "EMPLOYER" ? false : true);
     sessionStorage.setItem('user', JSON.stringify(data));
   };
 
@@ -35,6 +37,7 @@ export const AuthProvider = ({ children }) => {
         if (storedUser) {
           const userData = JSON.parse(storedUser);
           SetUser(userData);
+          SetIsApplicant(userData.role == "EMPLOYER" ? false : true);
           SetIsAuth(true);
         } else {
           SetIsAuth(false);
@@ -56,6 +59,7 @@ export const AuthProvider = ({ children }) => {
     IsAuth,
     isLoading,
     User,
+    IsApplicant,
     SetUser: UpdateUserData,
     ClearUser: DeleteUserData,
     SetIsAuth,

@@ -1,35 +1,51 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { 
+    getUserFavorites,
+    addToFavorites as addToFavoritesBackend,
+    removeFromFavorites as removeFromFavoritesBackend 
+} from '../api/services';
+
 
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
   const { IsAuth } = useAuth();
 
-  // Загружаем избранное при монтировании
   useEffect(() => {
-    if (!IsAuth) {
-      // Для неавторизованных - из localStorage
-      const storedFavorites = localStorage.getItem('favorites');
-      if (storedFavorites) {
+    const loadFavorites = async () => {
+      if (!IsAuth) {
+        // Для неавторизованных - из localStorage
+        const storedFavorites = localStorage.getItem('favorites');
+        if (storedFavorites) {
+          try {
+            const parsed = JSON.parse(storedFavorites);
+            setFavorites(parsed);
+          } catch (e) {
+            console.error('Error parsing favorites:', e);
+            setFavorites([]);
+          }
+        }
+      } else {
+        // Для авторизованных - запрос к бэкенду
         try {
-          setFavorites(JSON.parse(storedFavorites));
-        } catch (e) {
-          console.error('Error parsing favorites:', e);
+          const response = await getUserFavorites(1, 1000);
+          setFavorites(response?.data || []);
+        } catch (error) {
+          console.error('Error loading favorites:', error);
           setFavorites([]);
         }
       }
-    } else {
-      // Для авторизованных - позже будем делать запрос к бэкенду
-      // Пока оставляем пустым
-      setFavorites([]);
-    }
+    };
+    
+    loadFavorites();
   }, [IsAuth]);
 
   // Добавить в избранное
-  const addToFavorites = (opportunity) => {
+  const addToFavorites = async (opportunity) => {
     if (!IsAuth) {
       // Неавторизованные - в localStorage
       setFavorites(prev => {
+        // Проверяем по id, так как храним полные объекты
         if (prev.some(item => item.id === opportunity.id)) {
           return prev;
         }
@@ -38,39 +54,68 @@ export const useFavorites = () => {
         return newFavorites;
       });
     } else {
-      // Авторизованные - позже запрос к бэкенду
-      setFavorites(prev => {
-        if (prev.some(item => item.id === opportunity.id)) {
-          return prev;
-        }
-        return [...prev, opportunity];
-      });
+      // Авторизованные - запрос к бэкенду
+      // Проверяем по opportunityId
+      if (favorites.some(item => item.opportunityId === opportunity.id)) {
+        return;
+      }
+      try {
+        await addToFavoritesBackend(opportunity.id);
+        const newFavorite = {
+          id: Date.now(),
+          opportunityId: opportunity.id,
+          opportunity: opportunity
+        };
+        setFavorites(prev => [...prev, newFavorite]);
+      } catch (error) {
+        console.error('Error adding to favorites:', error);
+      }
     }
   };
 
   // Удалить из избранного
-  const removeFromFavorites = (opportunityId) => {
+  const removeFromFavorites = async (opportunityId) => {
     if (!IsAuth) {
+      // Неавторизованные - удаляем по id (так как храним полные объекты)
       setFavorites(prev => {
         const newFavorites = prev.filter(item => item.id !== opportunityId);
         localStorage.setItem('favorites', JSON.stringify(newFavorites));
         return newFavorites;
       });
     } else {
-      setFavorites(prev => prev.filter(item => item.id !== opportunityId));
+      // Авторизованные - удаляем по opportunityId
+      setFavorites(prev => prev.filter(item => item.opportunityId !== opportunityId));
+      try {
+        await removeFromFavoritesBackend(opportunityId);
+      } catch (error) {
+        console.error('Error removing from favorites:', error);
+      }
     }
   };
 
   // Проверить, в избранном ли
   const isFavorite = (opportunityId) => {
-    return favorites.some(item => item.id === opportunityId);
+    if (!IsAuth) {
+      // Для неавторизованных - проверяем по id (поля объектов)
+      return favorites.some(item => item.id === opportunityId);
+    } else {
+      // Для авторизованных - проверяем по opportunityId
+      return favorites.some(item => item.opportunityId === opportunityId);
+    }
   };
 
   // Очистить избранное
-  const clearFavorites = () => {
-    setFavorites([]);
+  const clearFavorites = async () => {
     if (!IsAuth) {
       localStorage.removeItem('favorites');
+      setFavorites([]);
+    } else {
+      try {
+        await Promise.all(favorites.map(f => removeFromFavoritesBackend(f.opportunityId)));
+        setFavorites([]);
+      } catch (error) {
+        console.error('Error clearing favorites:', error);
+      }
     }
   };
 
