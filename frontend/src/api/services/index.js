@@ -13,5 +13,16 @@ export { getUserApplications, getCurrentApplicant, updateApplicantProfile,
 export { addToFavorites, removeFromFavorites, getUserFavorites } from "./ApplicantService/favorites";
 export { applyToOpportunity } from "./ApplicantService/applications";
 
+// Contacts
+export {
+  getContacts,
+  sendFriendRequest,
+  getFriendRequests,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  deleteContact,
+  getApplicantById
+} from "./ApplicantService/contacts";
+
 // Tags
 export { getTags } from "./TagService/tag";

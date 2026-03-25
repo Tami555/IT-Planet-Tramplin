@@ -26,6 +26,11 @@ export const handleApiError = (error, defaultMessage = "Произошла не�
       throw new Error("Ресурс не найден.");
     }
 
+    if (error.response.status === 409) {
+      const msg = error.response?.data?.message || "Конфликт состояния на сервере"
+      throw new Error(msg);
+    }
+
     if (error.response.status === 422) {
       throw new Error(`Не корректные данные ${error.response?.data?.detail[0].msg}`)
     }

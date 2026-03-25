@@ -19,11 +19,11 @@ import {
 } from '../../api/services';
 import './ApplicantProfilePage.css';
 import { default_user_ava } from "../../images/index";
+import { getMediaData } from '../../utils/files';
 
 
 const ApplicantProfilePage = () => {
   const navigate = useNavigate();
-  const API_URL = 'http://localhost:3000';
   const { User, ClearUser, IsApplicant } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -170,7 +170,7 @@ const ApplicantProfilePage = () => {
             <div className="avatar-section">
               <div className="avatar-wrapper">
                 <img 
-                    src={profile.avatarUrl ? `${API_URL}${profile.avatarUrl}` : default_user_ava} 
+                    src={profile.avatarUrl ? getMediaData(profile.avatarUrl) : default_user_ava} 
                     alt="Avatar"
                     className="profile-avatar"
                 />
@@ -193,8 +193,8 @@ const ApplicantProfilePage = () => {
                 <Heart size={35} />
                 <div className="stat-label">Избранное</div>
               </div>
-              <div className="stat-item">
-                <Users size={35} />
+              <div className="stat-item" onClick={() => navigate('/contacts')}>
+                <Users size={35}/>
                   <div className="stat-label">Контакты</div>
               </div>
               <div className="stat-item" onClick={() => navigate('/applications')}>
@@ -355,7 +355,7 @@ const ApplicantProfilePage = () => {
               {profile.resumeUrl ? (
                 <div className="resume-section">
                   <a 
-                    href={`${API_URL}${profile.resumeUrl}`} 
+                    href={getMediaData(profile.resumeUrl)} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="resume-link"

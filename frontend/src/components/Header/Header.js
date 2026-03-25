@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Heart, Briefcase, LogIn } from 'lucide-react';
+import { Home, Heart, Briefcase, LogIn, Users } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 import { default_user_ava } from '../../images';
 import { useFetch } from '../../hooks/useFetch';
 import { getCurrentApplicant } from '../../api/services';
+import { getMediaData } from '../../utils/files';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { IsAuth, IsApplicant } = useAuth();
   const [currentUser, setCurrentUser] = useState({});
-  const API_URL = 'http://localhost:3000';
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -54,6 +54,17 @@ const Header = () => {
                 <span>Избранное</span>
               </Link>
             )}
+            {(IsApplicant === true) && (
+              <>
+                <Link 
+                    to="/contacts" 
+                    className={`nav-link ${isActive('/contacts') ? 'active' : ''}`}
+                  >
+                    <Users size={18} />
+                    <span>Контакты</span>
+                  </Link>
+              </>
+            )}
             <Link 
               to="/companies" 
               className={`nav-link ${isActive('/companies') ? 'active' : ''}`}
@@ -72,7 +83,7 @@ const Header = () => {
                 onClick={() => navigate('/profile')}
               >
                 <img 
-                  src={currentUser?.avatarUrl ? `${API_URL}${currentUser?.avatarUrl}` : default_user_ava} 
+                  src={currentUser?.avatarUrl ? getMediaData(currentUser?.avatarUrl) : default_user_ava} 
                   alt={currentUser?.firstName || 'User'}
                 />
               </button>

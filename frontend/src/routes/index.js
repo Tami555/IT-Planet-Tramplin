@@ -6,6 +6,8 @@ import LoginPage from '../pages/LoginPage/LoginPage';
 import RegisterPage from '../pages/RegisterPage/RegisterPage';
 import LoginAdminPage from '../pages/LoginPage/LoginAdminPage';
 import ApplicantProfilePage from '../pages/ApplicantProfilePage/ApplicantProfilePage';
+import ContactsPage from '../pages/ContactsPage/ContactsPage';
+import ApplicantViewPage from '../pages/ApplicantViewPage/ApplicantViewPage';
 
 
 export const common_routes = [
@@ -26,5 +28,7 @@ export const authorized_routes = [
     { path: '/login', element: MainPage },
     { path: '/register', element: MainPage },
     { path: '/profile', element: ApplicantProfilePage },
+    { path: '/contacts', element: ContactsPage },
+    { path: '/applicant/:id', element: ApplicantViewPage },
     { path: '*', element: MainPage },
 ];
