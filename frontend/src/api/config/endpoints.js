@@ -18,7 +18,8 @@ export const OPPORTUNITY_ENDPOINTS = {
   GET_BY_ID: '/opportunities/:id',
   CREATE: '/opportunities',
   UPDATE: '/opportunities/:id',
-  DELETE: '/opportunities/:id'
+  DELETE: '/opportunities/:id',
+  UPLOAD_MEDIA: '/opportunities/:id/media'
 };
 
 export const APPLICANT_ENDPOINTS = {
@@ -31,6 +32,18 @@ export const APPLICANT_ENDPOINTS = {
   
   FAVORITE: '/applicants/me/favorites',
   DELETE_FAVORITE: '/applicants/me/favorites/:id'
+};
+
+
+export const EMPLOYER_ENDPOINTS = {
+  GET_ME: '/employers/me',
+  UPDATE_PROFILE: '/employers/me',
+  UPLOAD_LOGO: '/employers/me/logo',
+  UPLOAD_PHOTOS: '/employers/me/office-photos',
+  VERIFICATION: '/employers/me/verification',
+  MY_OPPORTUNITIES: '/employers/me/opportunities',
+  MY_APPLICATIONS: '/employers/me/applications',
+  UPDATE_APPLICATION_STATUS: '/employers/me/applications/:id/status'
 };
 
 export const TAG_ENDPOINTS = {

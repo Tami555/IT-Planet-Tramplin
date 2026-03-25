@@ -4,7 +4,7 @@
 export { login, registration, logout } from "./UserService/auth";
 
 // Opportunities
-export { getOpportunities, getOpportunityById } from "./OpportunityService/opportunity";
+export { getOpportunities, getOpportunityById, createOpportunity, updateOpportunity, uploadOpportunityMedia, deleteOpportunity } from "./OpportunityService/opportunity";
 
 
 // Applicant
@@ -26,3 +26,9 @@ export {
 
 // Tags
 export { getTags } from "./TagService/tag";
+
+//Employer
+export {getCurrentEmployer, updateEmployerProfile,
+   uploadEmployerLogo, uploadOfficePhotos, submitVerification} from "./EmployerService/employer";
+export {getMyOpportunities } from "./EmployerService/opportunity";
+export {getMyApplications, updateApplicationStatus} from "./EmployerService/applications";

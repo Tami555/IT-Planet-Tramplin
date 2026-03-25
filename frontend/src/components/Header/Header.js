@@ -6,22 +6,33 @@ import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 import { default_user_ava } from '../../images';
 import { useFetch } from '../../hooks/useFetch';
-import { getCurrentApplicant } from '../../api/services';
+import { getCurrentApplicant, getCurrentEmployer } from '../../api/services';
 import { getMediaData } from '../../utils/files';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { IsAuth, IsApplicant } = useAuth();
+  const { IsAuth, IsApplicant, IsAdmin } = useAuth();
   const [currentUser, setCurrentUser] = useState({});
 
   const isActive = (path) => {
     return location.pathname === path;
   };
 
+  const getProfilePath = () => {
+    if (IsApplicant) return '/profile';
+    if (!IsApplicant && !IsAdmin) return '/employer/profile';
+    return '/profile';
+  };
+
   const [getCurrentUser, loadingUser] = useFetch(async () => {
     if (IsApplicant){
       const res = await getCurrentApplicant();
+      setCurrentUser(res);
+    }
+    if (IsAuth && !IsAdmin && !IsApplicant) {
+      console.log('AAAAAAAAAAAAAAA')
+      const res = await getCurrentEmployer();
       setCurrentUser(res);
     }
     return;
@@ -80,10 +91,10 @@ const Header = () => {
             <div className="user-menu">
               <button 
                 className="user-avatar"
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate(getProfilePath())}
               >
                 <img 
-                  src={currentUser?.avatarUrl ? getMediaData(currentUser?.avatarUrl) : default_user_ava} 
+                  src={currentUser?.avatarUrl ? getMediaData(currentUser?.avatarUrl) : (currentUser?.logoUrl ? currentUser?.logoUrl : default_user_ava)} 
                   alt={currentUser?.firstName || 'User'}
                 />
               </button>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sliders, X, ChevronDown, ChevronUp } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import './Filters.css';
+import { supportedCities as cities } from '../../data/mockData';
 
 const Filters = ({ 
   onFilterChange,
@@ -26,15 +27,6 @@ const Filters = ({
     { id: 'VACANCY_JUNIOR', label: 'Вакансия', color: '#5AA5CD' },
     { id: 'MENTORSHIP', label: 'Менторство', color: '#6F71A1' },
     { id: 'CAREER_EVENT', label: 'Мероприятие', color: '#27E6EC' }
-  ];
-
-  const cities = [
-    'Москва',
-    'Санкт-Петербург',
-    'Казань',
-    'Новосибирск',
-    'Екатеринбург',
-    'Нижний Новгород'
   ];
 
   const handleSkillToggle = (skillId) => {

@@ -177,13 +177,14 @@
 /* Кнопки */
 .privacy-toggle,
 .logout-btn {
-  margin-bottom: 12px;
   justify-content: center;
   width: 100%;
+  margin: 12px 0px;
 }
 
 .logout-btn {
   color: var(--error);
+  border: 1px solid #d32f2f;
 }
 
 .logout-btn:hover {

@@ -12,17 +12,7 @@ import { useFetch } from '../../hooks/useFetch';
 import { getOpportunities, applyToOpportunity, getUserApplications, getTags } from '../../api/services';
 import Footer from '../../components/Footer/Footer';
 import './MainPage.css';
-
-
-// Координаты городов для карты
-const cityCoordinates = {
-  'Москва': [55.7558, 37.6176],
-  'Санкт-Петербург': [59.9343, 30.3351],
-  'Казань': [55.7887, 49.1221],
-  'Новосибирск': [55.0084, 82.9357],
-  'Екатеринбург': [56.8389, 60.6057],
-  'Нижний Новгород': [56.2965, 43.9361]
-};
+import { cityCoordinates } from '../../data/mockData';
 
 
 const MainPage = () => {

@@ -43,3 +43,50 @@ export const getOpportunityById = async (id) => {
     handleApiError
   );
 };
+
+// Создать возможность
+export const createOpportunity = async (opportunityData) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.post(getBackendUrl(OPPORTUNITY_ENDPOINTS.CREATE), opportunityData);
+    return response.data;
+  });
+};
+
+// Обновить возможность
+export const updateOpportunity = async (id, opportunityData) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.patch(
+      getBackendUrl(OPPORTUNITY_ENDPOINTS.UPDATE.replace(':id', id)),
+      opportunityData
+    );
+    return response.data;
+  });
+};
+
+// Удалить возможность
+export const deleteOpportunity = async (id) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.delete(getBackendUrl(OPPORTUNITY_ENDPOINTS.DELETE.replace(':id', id)));
+    return response.data;
+  });
+};
+
+// Загрузить медиа для возможности
+export const uploadOpportunityMedia = async (opportunityId, files) => {
+  return await apiRequest(async () => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    const response = await apiClient.post(
+      `${getBackendUrl(OPPORTUNITY_ENDPOINTS.UPLOAD_MEDIA.replace(':id', opportunityId))}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  });
+};

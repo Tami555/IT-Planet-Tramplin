@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [User, SetUser] = useState(null);
   const [IsApplicant, SetIsApplicant] = useState(false);
+  const [IsAdmin, SetIsAdmin] = useState(false);
 
   const UpdateUserData = (data) => {
     SetUser(data);
@@ -37,7 +38,8 @@ export const AuthProvider = ({ children }) => {
         if (storedUser) {
           const userData = JSON.parse(storedUser);
           SetUser(userData);
-          SetIsApplicant(userData.role == "EMPLOYER" ? false : true);
+          SetIsApplicant(userData.role == "APPLICANT" ? true : false);
+          SetIsAdmin(userData.role == "CURATOR" ? true : false)
           SetIsAuth(true);
         } else {
           SetIsAuth(false);
@@ -60,6 +62,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     User,
     IsApplicant,
+    IsAdmin,
     SetUser: UpdateUserData,
     ClearUser: DeleteUserData,
     SetIsAuth,
