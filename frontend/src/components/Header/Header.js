@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Heart, Briefcase, LogIn, Users } from 'lucide-react';
+import { Home, Heart, Briefcase, LogIn, Users, CheckCircle  } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
@@ -31,7 +31,6 @@ const Header = () => {
       setCurrentUser(res);
     }
     if (IsAuth && !IsAdmin && !IsApplicant) {
-      console.log('AAAAAAAAAAAAAAA')
       const res = await getCurrentEmployer();
       setCurrentUser(res);
     }
@@ -73,7 +72,15 @@ const Header = () => {
                   >
                     <Users size={18} />
                     <span>Контакты</span>
-                  </Link>
+                </Link>
+
+                <Link 
+                    to="/applications" 
+                    className={`nav-link ${isActive('/applications') ? 'active' : ''}`}
+                  >
+                    <CheckCircle size={18} />
+                    <span>Мои отклики</span>
+                </Link>
               </>
             )}
             <Link 

@@ -8,10 +8,10 @@ export { getOpportunities, getOpportunityById, createOpportunity, updateOpportun
 
 
 // Applicant
-export { getUserApplications, getCurrentApplicant, updateApplicantProfile,
+export { getCurrentApplicant, updateApplicantProfile,
      updatePrivacySettings, uploadAvatar, uploadResume } from "./ApplicantService/applicant";
 export { addToFavorites, removeFromFavorites, getUserFavorites } from "./ApplicantService/favorites";
-export { applyToOpportunity } from "./ApplicantService/applications";
+export { getUserApplications, applyToOpportunity, revokeOpportunity } from "./ApplicantService/applications";
 
 // Contacts
 export {
