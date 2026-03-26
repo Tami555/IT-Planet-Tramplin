@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const UpdateUserData = (data) => {
     SetUser(data);
     SetIsApplicant(data?.role == "APPLICANT" ? true : false);
-    SetIsAdmin(data?.role == "CURATOR" ? true : false)
+    SetIsAdmin(data?.role == "CURATOR" ? true : false);
     sessionStorage.setItem('user', JSON.stringify(data));
   };
 
@@ -39,8 +39,10 @@ export const AuthProvider = ({ children }) => {
         if (storedUser) {
           const userData = JSON.parse(storedUser);
           SetUser(userData);
+
           SetIsApplicant(userData.role == "APPLICANT" ? true : false);
-          SetIsAdmin(userData.role == "CURATOR" ? true : false)
+          SetIsAdmin(userData.role == "CURATOR" ? true : false);
+
           SetIsAuth(true);
         } else {
           SetIsAuth(false);

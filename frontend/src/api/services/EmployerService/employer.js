@@ -1,12 +1,23 @@
 import { getBackendUrl, EMPLOYER_ENDPOINTS } from "../../config/endpoints";
 import { apiRequest } from "../../utils/apiRequest";
 import { apiClient } from "../../config/apiClient";
+import axios from "axios";
 
 
 // Получить профиль текущего работодателя
 export const getCurrentEmployer = async () => {
   return await apiRequest(async () => {
     const response = await apiClient.get(getBackendUrl(EMPLOYER_ENDPOINTS.GET_ME));
+    return response.data;
+  });
+};
+
+
+// Получить профиль работодателя по ID
+export const getEmployerById = async (EmployerId) => {
+  return await apiRequest(async () => {
+    const url = getBackendUrl(EMPLOYER_ENDPOINTS.GET_PUBLIC_PROFILE.replace(':id', EmployerId))
+    const response = await axios.get(url);
     return response.data;
   });
 };

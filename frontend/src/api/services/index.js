@@ -29,7 +29,7 @@ export { getTags, createTag, deleteTag } from "./TagService/tag";
 
 //Employer
 export {getCurrentEmployer, updateEmployerProfile,
-   uploadEmployerLogo, uploadOfficePhotos, submitVerification} from "./EmployerService/employer";
+   uploadEmployerLogo, uploadOfficePhotos, submitVerification, getEmployerById} from "./EmployerService/employer";
 export {getMyOpportunities } from "./EmployerService/opportunity";
 export {getMyApplications, updateApplicationStatus} from "./EmployerService/applications";
 

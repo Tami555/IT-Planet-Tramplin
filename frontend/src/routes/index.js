@@ -11,6 +11,7 @@ import ApplicantViewPage from '../pages/ApplicantViewPage/ApplicantViewPage';
 import EmployerProfilePage from '../pages/EmployerProfilePage/EmployerProfilePage';
 import ApplicationsPage from '../pages/ApplicationsPage/ApplicationsPage';
 import CuratorProfilePage from '../pages/CuratorProfilePage/CuratorProfilePage';
+import EmployerViewPage from '../pages/EmployerViewPage/EmployerViewPage';
 
 
 export const common_routes = [
@@ -18,6 +19,7 @@ export const common_routes = [
     { path: '/opportunity/:id', element: OpportunityDetailPage },
     { path: '/favorites', element: FavoritesPage },
     { path: '/companies', element: CompaniesPage },
+    { path: '/employer/:id', element: EmployerViewPage },
 ];
 
 export const no_authorized_routes = [

@@ -15,7 +15,7 @@ const UsersTable = ({ users, onToggleStatus, loading }) => {
       return navigate(`/applicant/${user.id}`)
     }
     else if (user.employer != null){
-      console.log(`Profile: ${user.employer.companyName}`)
+      return navigate(`/employer/${user.id}`)
     }
     else{
       console.log('Profile Admin')
