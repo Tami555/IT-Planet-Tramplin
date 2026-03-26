@@ -12,14 +12,15 @@ import { getMediaData } from '../../utils/files';
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { IsAuth, IsApplicant, IsAdmin } = useAuth();
+  const { IsAuth, IsApplicant, IsAdmin, User } = useAuth();
   const [currentUser, setCurrentUser] = useState({});
 
   const isActive = (path) => {
     return location.pathname === path;
   };
 
-  const getProfilePath = () => {
+   const getProfilePath = () => {
+    if (IsAdmin) return '/curator';
     if (IsApplicant) return '/profile';
     if (!IsApplicant && !IsAdmin) return '/employer/profile';
     return '/profile';
@@ -33,6 +34,9 @@ const Header = () => {
     if (IsAuth && !IsAdmin && !IsApplicant) {
       const res = await getCurrentEmployer();
       setCurrentUser(res);
+    }
+    else{
+      setCurrentUser(User)
     }
     return;
   });

@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import Button from '../UI/Button/Button';
 import './OpportunityCard.css';
 import { useAuth } from '../../contexts/AuthContext';
+import { default_company_ava } from "../../images/index"
 
 
 const OpportunityCard = ({ 
@@ -61,11 +62,11 @@ const OpportunityCard = ({
       <div className="card-header">
         <div className="company-info">
           <img 
-            src={opportunity.company?.logo || opportunity.employer?.logoUrl || 'https://via.placeholder.com/40x40?text=Company'} 
+            src={opportunity.company?.logo || opportunity.employer?.logoUrl || default_company_ava} 
             alt={opportunity.company?.name || opportunity.employer?.companyName}
             className="company-logo"
             onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/40x40?text=Company';
+              e.target.src = default_company_ava;
             }}
           />
           <div className="company-details">

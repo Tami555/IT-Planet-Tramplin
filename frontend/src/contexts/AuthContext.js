@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }) => {
 
   const UpdateUserData = (data) => {
     SetUser(data);
-    SetIsApplicant(data?.role == "EMPLOYER" ? false : true);
+    SetIsApplicant(data?.role == "APPLICANT" ? true : false);
+    SetIsAdmin(data?.role == "CURATOR" ? true : false)
     sessionStorage.setItem('user', JSON.stringify(data));
   };
 

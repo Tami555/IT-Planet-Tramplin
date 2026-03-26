@@ -12,6 +12,7 @@ import { useFetch } from '../../hooks/useFetch';
 import { getOpportunityById, getOpportunities, applyToOpportunity, getTags, getUserApplications } from '../../api/services';
 import Footer from '../../components/Footer/Footer';
 import './OpportunityDetailPage.css';
+import { default_company_ava } from '../../images';
 
 
 const OpportunityDetailPage = () => {
@@ -197,11 +198,11 @@ const OpportunityDetailPage = () => {
             <div className="detail-header">
               <div className="company-badge">
                 <img 
-                  src={opportunity.employer?.logoUrl || 'https://via.placeholder.com/80x80?text=Company'} 
+                  src={opportunity.employer?.logoUrl || default_company_ava} 
                   alt={opportunity.employer?.companyName}
                   className="company-logo-large"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/80x80?text=Company';
+                    e.target.src = default_company_ava;
                   }}
                 />
                 <div className="company-info">
@@ -425,11 +426,11 @@ const OpportunityDetailPage = () => {
                       onClick={() => navigate(`/opportunity/${similar.id}`)}
                     >
                       <img 
-                        src={similar.employer?.logoUrl || 'https://via.placeholder.com/40x40?text=Company'} 
+                        src={similar.employer?.logoUrl || default_company_ava} 
                         alt={similar.employer?.companyName}
                         className="similar-logo"
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/40x40?text=Company';
+                          e.target.src = default_company_ava;
                         }}
                       />
                       <div className="similar-info">

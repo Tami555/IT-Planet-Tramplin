@@ -13,23 +13,29 @@ import { getApplicantById, getContacts, sendFriendRequest } from '../../api/serv
 import './ApplicantViewPage.css';
 import { default_user_ava } from '../../images';
 import { getMediaData } from '../../utils/files';
+import { getUserDetails } from '../../api/services';
 
 
 const ApplicantViewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { IsAuth, User, IsApplicant } = useAuth();
+  const { IsAuth, User, IsApplicant, IsAdmin } = useAuth();
   const [applicant, setApplicant] = useState(null);
   const [isFriend, setIsFriend] = useState(false);
 
   // Загрузка профиля
   const [fetchProfile, loadingProfile, profileError] = useFetch(async () => {
-    const data = await getApplicantById(id);
-    setApplicant(data);
-    const currentUserFriends = await getContacts();
-    console.log()
-    setIsFriend(currentUserFriends.map(f => f?.id).includes(id))
-    // TODO: проверить, является ли пользователь другом
+    if (IsApplicant){
+      const data = await getApplicantById(id);
+      setApplicant(data);
+      const currentUserFriends = await getContacts();
+      setIsFriend(currentUserFriends.map(f => f?.id).includes(id))
+    }
+    else{
+      const data = await getUserDetails(id);
+      setApplicant(data.applicant);
+      setIsFriend(true)
+    }
   });
 
   // Отправка запроса в друзья
@@ -45,8 +51,8 @@ const ApplicantViewPage = () => {
   const canViewField = (fieldPrivacy) => {
     if (!IsAuth) return false;
     if (fieldPrivacy === 'PUBLIC') return true;
-    if (fieldPrivacy === 'CONTACTS' && isFriend) return true;
-    if (fieldPrivacy === 'PRIVATE' && User?.id === applicant?.userId) return true;
+    if ((fieldPrivacy === 'CONTACTS' && isFriend) || IsAdmin == true) return true;
+    if ((fieldPrivacy === 'PRIVATE' && User?.id === applicant?.userId) || IsAdmin == true) return true;
     return false;
   };
 
@@ -74,7 +80,7 @@ const ApplicantViewPage = () => {
     );
   }
 
-  if (profileError || !applicant) {
+  if (profileError || !applicant ) {
     return (
       <div className="applicant-view-page">
         <Header />

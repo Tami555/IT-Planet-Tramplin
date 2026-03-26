@@ -51,3 +51,15 @@ export const TAG_ENDPOINTS = {
   CREATE: '/tags',
   DELETE: '/tags/:id'
 };
+
+export const CURATOR_ENDPOINTS = {
+  STATS: '/curators/stats',
+  ACCOUNTS: '/curators/accounts',
+  USERS: '/curators/users',
+  USER_DETAILS: '/curators/users/:id',
+  USER_STATUS: '/curators/users/:id/status',
+  PENDING_VERIFICATION: '/curators/verification/pending',
+  REVIEW_VERIFICATION: '/curators/verification/:id',
+  MODERATION_OPPORTUNITIES: '/curators/moderation/opportunities',
+  MODERATE_OPPORTUNITY: '/curators/moderation/opportunities/:id',
+};

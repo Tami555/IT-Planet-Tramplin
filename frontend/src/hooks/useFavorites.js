@@ -9,7 +9,7 @@ import {
 
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
-  const { IsAuth } = useAuth();
+  const { IsAuth, IsApplicant } = useAuth();
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -27,12 +27,14 @@ export const useFavorites = () => {
         }
       } else {
         // Для авторизованных - запрос к бэкенду
-        try {
-          const response = await getUserFavorites(1, 1000);
-          setFavorites(response?.data || []);
-        } catch (error) {
-          console.error('Error loading favorites:', error);
-          setFavorites([]);
+        if (IsApplicant) {
+          try {
+            const response = await getUserFavorites(1, 1000);
+            setFavorites(response?.data || []);
+          } catch (error) {
+            console.error('Error loading favorites:', error);
+            setFavorites([]);
+          }
         }
       }
     };

@@ -20,3 +20,22 @@ export const getTags = async (filters = {}) => {
     handleApiError
   );
 };
+
+// Создать тег
+export const createTag = async (name, category) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.post(getBackendUrl(TAG_ENDPOINTS.CREATE), {
+      name,
+      category
+    });
+    return response.data;
+  });
+};
+
+// Удалить тег
+export const deleteTag = async (tagId) => {
+  return await apiRequest(async () => {
+    const response = await apiClient.delete(getBackendUrl(TAG_ENDPOINTS.DELETE.replace(':id', tagId)));
+    return response.data;
+  });
+};

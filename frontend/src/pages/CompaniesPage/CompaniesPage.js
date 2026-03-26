@@ -7,6 +7,7 @@ import Button from '../../components/UI/Button/Button';
 import { companies, opportunities } from '../../data/mockData';
 import { useAuth } from '../../contexts/AuthContext';
 import './CompaniesPage.css';
+import { default_company_ava } from '../../images';
 
 const CompaniesPage = () => {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ const CompaniesPage = () => {
                       alt={company.name}
                       className="company-logo-large"
                       onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/80x80?text=Company';
+                        e.target.src = default_company_ava;
                       }}
                     />
                     <div className="company-header-info">

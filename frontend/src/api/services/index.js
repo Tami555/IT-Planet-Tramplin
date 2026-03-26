@@ -25,10 +25,15 @@ export {
 } from "./ApplicantService/contacts";
 
 // Tags
-export { getTags } from "./TagService/tag";
+export { getTags, createTag, deleteTag } from "./TagService/tag";
 
 //Employer
 export {getCurrentEmployer, updateEmployerProfile,
    uploadEmployerLogo, uploadOfficePhotos, submitVerification} from "./EmployerService/employer";
 export {getMyOpportunities } from "./EmployerService/opportunity";
 export {getMyApplications, updateApplicationStatus} from "./EmployerService/applications";
+
+//Curator
+export {getCurators, getPlatformStats, createCurator} from "./CuratorService/curator";
+export {getPendingVerifications, reviewVerification, getModerationOpportunities, moderateOpportunity} from "./CuratorService/moderation";
+export {getUsers, getUserDetails, updateUserStatus} from "./CuratorService/users";

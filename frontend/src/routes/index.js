@@ -10,6 +10,7 @@ import ContactsPage from '../pages/ContactsPage/ContactsPage';
 import ApplicantViewPage from '../pages/ApplicantViewPage/ApplicantViewPage';
 import EmployerProfilePage from '../pages/EmployerProfilePage/EmployerProfilePage';
 import ApplicationsPage from '../pages/ApplicationsPage/ApplicationsPage';
+import CuratorProfilePage from '../pages/CuratorProfilePage/CuratorProfilePage';
 
 
 export const common_routes = [
@@ -27,13 +28,13 @@ export const no_authorized_routes = [
 ];
 
 export const authorized_routes = [
-    
     { path: '/login', element: MainPage },
     { path: '/register', element: MainPage },
     { path: '/profile', element: ApplicantProfilePage },
     { path: '/contacts', element: ContactsPage },
     { path: '/applicant/:id', element: ApplicantViewPage },
     { path: '/employer/profile', element: EmployerProfilePage },
+    { path: '/curator', element: CuratorProfilePage },
     { path: '/applications', element: ApplicationsPage},
     { path: '*', element: MainPage },
 ];

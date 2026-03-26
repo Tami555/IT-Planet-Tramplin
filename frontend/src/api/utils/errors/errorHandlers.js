@@ -14,16 +14,25 @@ export const handleApiError = (error, defaultMessage = "Произошла не�
   // HTTP errors
   if (error.response?.data) {    
     //  Статус-специфичные ошибки
+
+    if (error.response.status === 400) {
+      const msg = error.response?.data?.message || "Неправильные данные"
+      throw new Error(msg);
+    }
+
     if (error.response.status === 401) {
-      throw new Error("Неавторизованный доступ. Пожалуйста, войдите снова.");
+      const msg = error.response?.data?.message || "Неавторизованный доступ. Пожалуйста, войдите снова."
+      throw new Error(msg);
     }
     
     if (error.response.status === 403) {
-      throw new Error("Доступ запрещен.");
+      const msg = error.response?.data?.message || "Доступ запрещен."
+      throw new Error(msg);
     }
     
     if (error.response.status === 404) {
-      throw new Error("Ресурс не найден.");
+      const msg = error.response?.data?.message || "Ресурс не найден."
+      throw new Error(msg);
     }
 
     if (error.response.status === 409) {
@@ -32,7 +41,8 @@ export const handleApiError = (error, defaultMessage = "Произошла не�
     }
 
     if (error.response.status === 422) {
-      throw new Error(`Не корректные данные ${error.response?.data?.detail[0].msg}`)
+      const msg = error.response?.data?.message || "Не корректные данные"
+      throw new Error(msg);
     }
     
     if (error.response.status >= 500) {
