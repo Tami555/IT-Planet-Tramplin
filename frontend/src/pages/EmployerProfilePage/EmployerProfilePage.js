@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Building2, Mail, Globe, MapPin, Phone, Edit2, 
   Upload, Trash2, Plus, CheckCircle, XCircle, Clock,
-  Image, Users, Briefcase, ExternalLink, Shield, LogOut
+  Image, Users, Briefcase, ExternalLink, Shield, LogOut,
+  Tag, Search, X
 } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -25,7 +26,7 @@ import {
   updateApplicationStatus,
   logout
 } from '../../api/services';
-import { createOpportunity, updateOpportunity, deleteOpportunity } from '../../api/services';
+import { createOpportunity, updateOpportunity, deleteOpportunity, getTags, createTag } from '../../api/services';
 import { supportedCities } from '../../data/mockData';
 import './EmployerProfilePage.css';
 import { getMediaData } from '../../utils/files';
@@ -37,7 +38,7 @@ const EmployerProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
-  const [selectedTab, setSelectedTab] = useState('overview'); // overview, opportunities, applications
+  const [selectedTab, setSelectedTab] = useState('overview'); // overview, opportunities, applications, tags
   const [opportunities, setOpportunities] = useState([]);
   const [applications, setApplications] = useState([]);
   const [selectedOpportunityId, setSelectedOpportunityId] = useState(null);
@@ -45,6 +46,14 @@ const EmployerProfilePage = () => {
   const [editingOpportunity, setEditingOpportunity] = useState(null);
   const [officePhotos, setOfficePhotos] = useState([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  
+  // Состояния для тегов
+  const [tags, setTags] = useState([]);
+  const [filteredTags, setFilteredTags] = useState([]);
+  const [searchTagQuery, setSearchTagQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [newTag, setNewTag] = useState({ name: '', category: 'technology' });
   
   // Загрузка профиля
   const [fetchProfile, loadingProfile, profileError] = useFetch(async () => {
@@ -74,13 +83,12 @@ const EmployerProfilePage = () => {
     setProfile(prev => ({ ...prev, logoUrl: result.logoUrl }));
   });
   
-
-// Загрузка фото офиса
-const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
-  const result = await uploadOfficePhotos(files);
-  setOfficePhotos(result.officePhotoUrls);  
-  setUploadingPhotos(false);
-});
+  // Загрузка фото офиса
+  const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
+    const result = await uploadOfficePhotos(files);
+    setOfficePhotos(result.officePhotoUrls);  
+    setUploadingPhotos(false);
+  });
     
   // Верификация
   const [verifyCompany, verifying] = useFetch(async () => {
@@ -103,6 +111,22 @@ const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
     if (opportunityId) params.opportunityId = opportunityId;
     const data = await getMyApplications(params);
     setApplications(data);
+  });
+  
+  // Загрузка тегов
+  const [fetchTags, loadingTags] = useFetch(async () => {
+    const data = await getTags();
+    setTags(data);
+    setFilteredTags(data);
+  });
+  
+  // Создание тега
+  const [createTagFunc, creatingTag] = useFetch(async () => {
+    await createTag(newTag.name, newTag.category);
+    setShowCreateTagModal(false);
+    setNewTag({ name: '', category: 'technology' });
+    await fetchTags();
+    alert('Тег успешно создан!');
   });
   
   // Создание/обновление возможности
@@ -143,8 +167,28 @@ const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
       fetchProfile();
       fetchOpportunities();
       fetchApplications();
+      fetchTags(); // Загружаем теги
     }
   }, [User]);
+  
+  // Фильтрация тегов
+  useEffect(() => {
+    let filtered = [...tags];
+    
+    // Фильтр по поиску
+    if (searchTagQuery) {
+      filtered = filtered.filter(tag => 
+        tag.name.toLowerCase().includes(searchTagQuery.toLowerCase())
+      );
+    }
+    
+    // Фильтр по категории
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(tag => tag.category === selectedCategory);
+    }
+    
+    setFilteredTags(filtered);
+  }, [searchTagQuery, selectedCategory, tags]);
   
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -205,6 +249,16 @@ const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
       default:
         return { label: 'Не верифицирована', class: 'unverified', icon: Shield };
     }
+  };
+
+  const getCategoryLabel = (category) => {
+    const categories = {
+      technology: 'Технология',
+      level: 'Уровень',
+      employment: 'Тип занятости',
+      custom: 'Пользовательский'
+    };
+    return categories[category] || category;
   };
   
   if (!IsApplicant && !IsAdmin === false && !User) {
@@ -515,6 +569,13 @@ const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
                 >
                   Отклики
                 </button>
+                <button
+                  className={`tab-btn ${selectedTab === 'tags' ? 'active' : ''}`}
+                  onClick={() => setSelectedTab('tags')}
+                >
+                  <Tag size={16} />
+                  Теги
+                </button>
               </div>
               
               <div className="tab-content">
@@ -567,6 +628,128 @@ const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
                     isLoading={loadingApplications || changingStatus}
                   />
                 )}
+                
+                {selectedTab === 'tags' && (
+                  <div className="tags-tab-employer">
+                    <div className="tags-header">
+                      <h3>Справочник тегов</h3>
+                      <Button 
+                        variant="primary" 
+                        size="small"
+                        onClick={() => setShowCreateTagModal(true)}
+                        disabled={profile.verificationStatus !== "VERIFIED"}
+                      >
+                        <Plus size={16} />
+                        Создать тег
+                      </Button>
+                    </div>
+                    
+                    {profile.verificationStatus !== "VERIFIED" && (
+                      <div className="verification-warning">
+                        <Shield size={20} />
+                        <p>Создание тегов доступно только после верификации компании</p>
+                      </div>
+                    )}
+                    
+                    {/* Поиск и фильтры */}
+                    <div className="tags-filters">
+                      <div className="search-tags-wrapper">
+                        <Search size={18} className="search-icon-tags" />
+                        <input
+                          type="text"
+                          placeholder="Поиск тегов..."
+                          value={searchTagQuery}
+                          onChange={(e) => setSearchTagQuery(e.target.value)}
+                          className="search-tags-input"
+                        />
+                        {searchTagQuery && (
+                          <button 
+                            className="clear-search"
+                            onClick={() => setSearchTagQuery('')}
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="category-filters">
+                        <button
+                          className={`category-filter ${selectedCategory === 'all' ? 'active' : ''}`}
+                          onClick={() => setSelectedCategory('all')}
+                        >
+                          Все
+                        </button>
+                        <button
+                          className={`category-filter ${selectedCategory === 'technology' ? 'active' : ''}`}
+                          onClick={() => setSelectedCategory('technology')}
+                        >
+                          Технологии
+                        </button>
+                        <button
+                          className={`category-filter ${selectedCategory === 'level' ? 'active' : ''}`}
+                          onClick={() => setSelectedCategory('level')}
+                        >
+                          Уровни
+                        </button>
+                        <button
+                          className={`category-filter ${selectedCategory === 'employment' ? 'active' : ''}`}
+                          onClick={() => setSelectedCategory('employment')}
+                        >
+                          Занятость
+                        </button>
+                        <button
+                          className={`category-filter ${selectedCategory === 'custom' ? 'active' : ''}`}
+                          onClick={() => setSelectedCategory('custom')}
+                        >
+                          Пользовательские
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Список тегов */}
+                    {loadingTags ? (
+                      <div className="tags-loading">
+                        <div className="spinner-small"></div>
+                        <p>Загрузка тегов...</p>
+                      </div>
+                    ) : (
+                      <div className="tags-grid-employer">
+                        {filteredTags.length > 0 ? (
+                          filteredTags.map(tag => (
+                            <div key={tag.id} className="tag-card-employer">
+                              <div className="tag-info">
+                                <span className="tag-name-employer">{tag.name}</span>
+                                <span className={`tag-category-badge ${tag.category}`}>
+                                  {getCategoryLabel(tag.category)}
+                                </span>
+                              </div>
+                              <div className="tag-meta">
+                                <span className="tag-created-at">
+                                  Создан: {new Date(tag.createdAt).toLocaleDateString('ru-RU')}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="tags-empty">
+                            <Tag size={48} />
+                            <p>Теги не найдены</p>
+                            <Button 
+                              variant="outline" 
+                              size="small"
+                              onClick={() => {
+                                setSearchTagQuery('');
+                                setSelectedCategory('all');
+                              }}
+                            >
+                              Сбросить фильтры
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -583,7 +766,56 @@ const [uploadPhotos, uploadingPhotosFunc] = useFetch(async (files) => {
         onSave={saveOpportunity}
         opportunity={editingOpportunity}
         isLoading={savingOpportunity}
+        tags={tags} // Передаем теги для выбора при создании возможности
       />
+      
+      {/* Модальное окно создания тега */}
+      {showCreateTagModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateTagModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Создать тег</h2>
+              <button className="modal-close" onClick={() => setShowCreateTagModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <InputBlock
+                label="Название тега"
+                value={newTag.name}
+                onChange={(e) => setNewTag({ ...newTag, name: e.target.value })}
+                placeholder="Например: Kotlin"
+                required
+              />
+              <div className="form-group">
+                <label className="input-label">Категория</label>
+                <select
+                  value={newTag.category}
+                  onChange={(e) => setNewTag({ ...newTag, category: e.target.value })}
+                  className="select-field"
+                >
+                  <option value="technology">Технология</option>
+                  <option value="level">Уровень</option>
+                  <option value="employment">Тип занятости</option>
+                  <option value="custom">Пользовательский</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <Button variant="outline" onClick={() => setShowCreateTagModal(false)}>
+                Отмена
+              </Button>
+              <Button 
+                variant="primary" 
+                onClick={createTagFunc} 
+                disabled={creatingTag || !newTag.name.trim()}
+              >
+                {creatingTag ? 'Создание...' : 'Создать'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <Footer />
     </div>
