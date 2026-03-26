@@ -12,6 +12,7 @@ import EmployerProfilePage from '../pages/EmployerProfilePage/EmployerProfilePag
 import ApplicationsPage from '../pages/ApplicationsPage/ApplicationsPage';
 import CuratorProfilePage from '../pages/CuratorProfilePage/CuratorProfilePage';
 import EmployerViewPage from '../pages/EmployerViewPage/EmployerViewPage';
+import CuratorViewPage from '../pages/CuratorViewPage/CuratorViewPage';
 
 
 export const common_routes = [
@@ -37,6 +38,7 @@ export const authorized_routes = [
     { path: '/applicant/:id', element: ApplicantViewPage },
     { path: '/employer/profile', element: EmployerProfilePage },
     { path: '/curator', element: CuratorProfilePage },
+    { path: '/curator/:id', element: CuratorViewPage },
     { path: '/applications', element: ApplicationsPage},
     { path: '*', element: MainPage },
 ];

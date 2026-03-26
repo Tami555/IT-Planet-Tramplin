@@ -186,7 +186,8 @@ const CuratorProfilePage = () => {
           <div className="header-info">
             <Shield size={40} className="header-icon" />
             <div>
-              <h1>Панель администратора</h1>
+              <h1>Здравствуйте {User.displayName} 👋</h1>
+              <h1>Вы в панели администратора</h1>
               <p>Управление платформой, пользователями и контентом</p>
             </div>
           </div>

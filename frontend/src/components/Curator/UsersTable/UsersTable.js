@@ -17,9 +17,7 @@ const UsersTable = ({ users, onToggleStatus, loading }) => {
     else if (user.employer != null){
       return navigate(`/employer/${user.id}`)
     }
-    else{
-      console.log('Profile Admin')
-    }
+    return navigate(`/curator/${user.id}`)
   }
 
   const getRoleIcon = (role) => {
