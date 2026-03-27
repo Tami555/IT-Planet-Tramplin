@@ -7,6 +7,7 @@ import { getMediaData } from '../../utils/files';
 
 
 const ApplicationsList = ({ applications, onStatusChange, isLoading }) => {
+  console.log("APPLICANTS", applications)
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -48,7 +49,7 @@ const ApplicationsList = ({ applications, onStatusChange, isLoading }) => {
         </div>
       ) : (
         <div className="applications-grid">
-          {applications.map(app => (
+          {applications?.map(app => (
             <div key={app.id} className="application-card">
               <div className="application-header">
                 <div className="applicant-info">

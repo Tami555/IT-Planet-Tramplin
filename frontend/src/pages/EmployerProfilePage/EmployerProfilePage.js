@@ -71,7 +71,7 @@ const EmployerProfilePage = () => {
   });
   
   // Обновление профиля
-  const [updateProfile, updatingProfile] = useFetch(async (profileData) => {
+  const [updateProfile, updatingProfile, errorupdatingProfile] = useFetch(async (profileData) => {
     const updated = await updateEmployerProfile(profileData);
     setProfile(updated);
     setIsEditing(false);
@@ -110,7 +110,7 @@ const EmployerProfilePage = () => {
     const params = { page: 1, limit: 100 };
     if (opportunityId) params.opportunityId = opportunityId;
     const data = await getMyApplications(params);
-    setApplications(data);
+    setApplications(data.data);
   });
   
   // Загрузка тегов
@@ -423,12 +423,26 @@ const EmployerProfilePage = () => {
                     required
                   />
                   <InputBlock
+                    label="ИНН"
+                    name="inn"
+                    value={editForm.inn}
+                    onChange={(e) => setEditForm({...editForm, inn: e.target.value})}
+                    required
+                  />
+                  <InputBlock
                     label="Описание"
                     name="description"
                     type="textarea"
                     rows={4}
                     value={editForm.description}
                     onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                    required
+                  />
+                  <InputBlock
+                    label="Корпоративная почта"
+                    name="corporateEmail"
+                    value={editForm.corporateEmail}
+                    onChange={(e) => setEditForm({...editForm, corporateEmail: e.target.value})}
                     required
                   />
                   <InputBlock
@@ -457,6 +471,7 @@ const EmployerProfilePage = () => {
                     </select>
                   </div>
                   <div className="edit-actions">
+                    {errorupdatingProfile && <p style={{color: 'red'}}>{errorupdatingProfile}</p>}
                     <Button variant="outline" onClick={() => setIsEditing(false)}>
                       Отмена
                     </Button>

@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Check, X, Eye, Building2, Mail, MapPin, Globe } from 'lucide-react';
 import Button from '../../UI/Button/Button';
 import './VerificationQueue.css';
+import { useNavigate } from 'react-router-dom';
 
 const VerificationQueue = ({ items, onReview, loading }) => {
+  const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState(null);
   const [reviewNote, setReviewNote] = useState('');
   const [statusModerate, setStatusModerate] = useState(null);
@@ -87,7 +89,7 @@ const VerificationQueue = ({ items, onReview, loading }) => {
             <div className="card-footer-verif">
               <button
                 className="view-details"
-                onClick={() => handleReview(item, 'VIEW')}
+                onClick={() => navigate(`/employer/${item.userId}`)}
               >
                 <Eye size={16} />
                 Подробнее
