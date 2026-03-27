@@ -23,19 +23,45 @@ export const login = async (email, password) => {
   );
 };
 
-
-export const registration = async (
+// регистрация работодателя
+export const registrationEmployer = async (
   email,
   displayName,
   password,
-  role
+  companyName
 ) => {
     return await apiRequest(
         async () => {
-            const res = await axios.post(getBackendUrl(USER_ENDPOINTS.REGISTRATION), {
+            const res = await axios.post(getBackendUrl(USER_ENDPOINTS.REGISTRATION + '/employer'), {
             email: email,
             displayName: displayName,
-            role: role,
+            companyName: companyName,
+            password: password
+        });
+        const data = res.data;
+        setCookie('access_token', data.accessToken);
+        setCookie('refresh_token', data.refreshToken);
+        return data.user;
+        },
+        handleCreateUpdateUserError
+    )
+}
+
+// регистрация соискателя
+export const registrationApplicant = async (
+  email,
+  displayName,
+  password,
+  firstName,
+  lastName
+) => {
+    return await apiRequest(
+        async () => {
+            const res = await axios.post(getBackendUrl(USER_ENDPOINTS.REGISTRATION + '/applicant'), {
+            email: email,
+            displayName: displayName,
+            firstName: firstName,
+            lastName: lastName,
             password: password
         });
         const data = res.data;

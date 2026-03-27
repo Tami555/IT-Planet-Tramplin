@@ -1,7 +1,7 @@
 // Единая точка входа для всех сервисов
 
 // Users
-export { login, registration, logout } from "./UserService/auth";
+export { login, registrationEmployer, registrationApplicant, logout } from "./UserService/auth";
 
 // Opportunities
 export { getOpportunities, getOpportunityById, createOpportunity, updateOpportunity, uploadOpportunityMedia, deleteOpportunity } from "./OpportunityService/opportunity";
