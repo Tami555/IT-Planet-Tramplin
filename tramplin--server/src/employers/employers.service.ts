@@ -15,6 +15,7 @@ import {
 import {FilesService} from '@/files/files.service';
 import {OpportunitiesService} from '@/opportunities/opportunities.service';
 import {buildPaginatedResponse} from '@/common/dto/pagination.dto';
+import {SearchEmployersDto} from "@/common/dto/search.dto";
 
 @Injectable()
 export class EmployersService {
@@ -79,44 +80,97 @@ export class EmployersService {
         });
     }
 
-    async submitVerification(userId: string, dto: SubmitVerificationDto) {
+    async submitVerification(userId: string) {  // 👈 убираем параметр dto
         const employer = await this.getEmployerByUserId(userId);
 
         if (employer.verificationStatus === VerificationStatus.VERIFIED) {
             throw new BadRequestException('Компания уже прошла верификацию');
         }
 
-        if (!dto.corporateEmail && !dto.inn) {
+        if (!employer.corporateEmail && !employer.inn) {
             throw new BadRequestException(
-                'Необходимо указать хотя бы один идентификатор: корпоративный email или ИНН',
+                'Для верификации необходимо заполнить корпоративный email или ИНН в профиле компании'
             );
         }
 
-        if (dto.corporateEmail && employer.websiteUrl) {
-            const emailDomain = dto.corporateEmail.split('@')[1];
-            const siteDomain = new URL(
-                employer.websiteUrl.startsWith('http')
-                    ? employer.websiteUrl
-                    : `https://${employer.websiteUrl}`,
-            ).hostname.replace('www.', '');
+        if (employer.corporateEmail && employer.websiteUrl) {
+            try {
+                const emailDomain = employer.corporateEmail.split('@')[1];
+                const siteDomain = new URL(
+                    employer.websiteUrl.startsWith('http')
+                        ? employer.websiteUrl
+                        : `https://${employer.websiteUrl}`
+                ).hostname.replace('www.', '');
 
-            if (!siteDomain.includes(emailDomain.split('.')[0])) {
-                console.warn(
-                    `Домен email (${emailDomain}) не совпадает с сайтом (${siteDomain}). Требует ручной проверки.`,
-                );
+                if (!siteDomain.includes(emailDomain.split('.')[0])) {
+                    console.warn(`Домен email (${emailDomain}) не совпадает с сайтом (${siteDomain}). Требует ручной проверки.`);
+                }
+            } catch (e) {
+                console.warn('Не удалось проверить домен сайта');
             }
         }
 
         return this.prisma.employer.update({
-            where: {id: employer.id},
+            where: { id: employer.id },
             data: {
-                corporateEmail: dto.corporateEmail,
-                inn: dto.inn,
-                websiteUrl: dto.websiteUrl ?? employer.websiteUrl,
                 verificationStatus: VerificationStatus.PENDING,
                 verificationNote: null,
             },
         });
+    }
+
+    async searchEmployers(dto: SearchEmployersDto) {
+        const { search, industry, city, verifiedOnly = true, page = 1, limit = 20 } = dto;
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+
+        if (verifiedOnly) {
+            where.verificationStatus = 'VERIFIED';
+        }
+
+        if (search) {
+            where.companyName = { contains: search, mode: 'insensitive' };
+        }
+
+        if (industry) {
+            where.industry = { contains: industry, mode: 'insensitive' };
+        }
+
+        if (city) {
+            where.city = { contains: city, mode: 'insensitive' };
+        }
+
+        const [data, total] = await Promise.all([
+            this.prisma.employer.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    companyName: true,
+                    description: true,
+                    industry: true,
+                    logoUrl: true,
+                    city: true,
+                    websiteUrl: true,
+                    verificationStatus: true,
+                    _count: {
+                        select: { opportunities: true },
+                    },
+                    user: {
+                        select: {
+                            email: true,
+                            createdAt: true,
+                        },
+                    },
+                },
+            }),
+            this.prisma.employer.count({ where }),
+        ]);
+
+        return buildPaginatedResponse(data, total, page, limit);
     }
 
     async getMyOpportunities(

@@ -19,6 +19,7 @@ import {
     ApiParam,
     ApiConsumes,
     ApiQuery,
+    ApiBody
 } from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {memoryStorage} from 'multer';
@@ -37,6 +38,7 @@ import {Roles} from '@/common/decorators/roles.decorator';
 import {CurrentUser} from '@/common/decorators/current-user.decorator';
 import {Public} from '@/common/decorators/public.decorator';
 import {JwtPayload} from '@/auth/interfaces/jwt-payload.interface';
+import {SearchApplicantsDto} from "@/common/dto/search.dto";
 
 @ApiTags('Соискатели (личный кабинет)')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -95,6 +97,18 @@ export class ApplicantsController {
     @UseInterceptors(FileInterceptor('file', {storage: memoryStorage()}))
     @ApiConsumes('multipart/form-data')
     @ApiOperation({summary: 'Загрузить аватар'})
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Файл изображения (JPEG, PNG, WEBP, GIF)',
+                },
+            },
+        },
+    })
     @ApiResponse({status: 201, description: 'Аватар загружен'})
     uploadAvatar(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
         return this.applicantsService.uploadAvatar(user.sub, file);
@@ -106,6 +120,18 @@ export class ApplicantsController {
     @UseInterceptors(FileInterceptor('file', {storage: memoryStorage()}))
     @ApiConsumes('multipart/form-data')
     @ApiOperation({summary: 'Загрузить резюме', description: 'PDF. Видимость — по настройкам приватности.'})
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Файл резюме (PDF, JPEG, PNG)',
+                },
+            },
+        },
+    })
     @ApiResponse({status: 201, description: 'Резюме загружено'})
     uploadResume(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
         return this.applicantsService.uploadResume(user.sub, file);
@@ -240,5 +266,19 @@ export class ApplicantsController {
     @ApiResponse({status: 200, description: 'Контакт удалён'})
     removeContact(@CurrentUser() user: JwtPayload, @Param('contactId') id: string) {
         return this.applicantsService.removeContact(user.sub, id);
+    }
+
+    @Public()
+    @Get()
+    @ApiOperation({
+        summary: 'Поиск соискателей',
+        description: 'Публичный эндпоинт для поиска соискателей с фильтрацией по имени, навыкам, учебному заведению.',
+    })
+    @ApiResponse({ status: 200, description: 'Список соискателей' })
+    searchApplicants(
+        @Query() dto: SearchApplicantsDto,
+        @CurrentUser() user?: JwtPayload,
+    ) {
+        return this.applicantsService.searchApplicants(dto, user?.sub);
     }
 }

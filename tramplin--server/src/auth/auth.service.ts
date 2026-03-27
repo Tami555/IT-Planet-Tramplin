@@ -11,6 +11,8 @@ import * as bcrypt from 'bcrypt';
 import {PrismaService} from '@/prisma.service';
 import {RegisterDto, LoginDto, RefreshTokenDto} from './dto/auth.dto';
 import {JwtPayload} from './interfaces/jwt-payload.interface';
+import {RegisterEmployerDto} from "@/auth/dto/register-employer.dto";
+import {RegisterApplicantDto} from "@/auth/dto/register-applicant.dto";
 
 @Injectable()
 export class AuthService {
@@ -19,6 +21,88 @@ export class AuthService {
         private jwtService: JwtService,
         private config: ConfigService,
     ) {
+    }
+
+    async registerApplicant(dto: RegisterApplicantDto) {
+        const existing = await this.prisma.user.findUnique({
+            where: {email: dto.email},
+        });
+
+        if (existing) {
+            throw new ConflictException('Пользователь с таким email уже зарегистрирован');
+        }
+
+        const passwordHash = await bcrypt.hash(dto.password, 12);
+        const displayName = `${dto.firstName} ${dto.lastName}`;
+
+        const user = await this.prisma.user.create({
+            data: {
+                email: dto.email,
+                displayName,
+                passwordHash,
+                role: Role.APPLICANT,
+                applicant: {
+                    create: {
+                        firstName: dto.firstName,
+                        lastName: dto.lastName,
+                    },
+                },
+            },
+            include: {applicant: true},
+        });
+
+        const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+        return {
+            ...tokens,
+            user: this.sanitizeUser(user),
+        };
+    }
+
+    async findUserById(userId: string) {
+        return this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                role: true,
+                isActive: true,
+            },
+        });
+    }
+
+    async registerEmployer(dto: RegisterEmployerDto) {
+        const existing = await this.prisma.user.findUnique({
+            where: {email: dto.email},
+        });
+        if (existing) {
+            throw new ConflictException('Пользователь с таким email уже зарегистрирован');
+        }
+
+        const passwordHash = await bcrypt.hash(dto.password, 12);
+
+        const user = await this.prisma.user.create({
+            data: {
+                email: dto.email,
+                displayName: dto.companyName,
+                passwordHash,
+                role: Role.EMPLOYER,
+                employer: {
+                    create: {
+                        companyName: dto.companyName,
+                        verificationStatus: 'PENDING',
+                    },
+                },
+            },
+            include: {employer: true},
+        });
+
+        const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+        return {
+            ...tokens,
+            user: this.sanitizeUser(user),
+        };
     }
 
     async register(dto: RegisterDto) {
