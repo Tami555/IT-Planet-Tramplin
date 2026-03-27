@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserPlus, Inbox, ArrowLeft } from 'lucide-react';
+import { Users, UserPlus, Inbox, ArrowLeft, TextAlignCenter } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import ContactCard from '../../components/ContactCard/ContactCard';
@@ -15,8 +15,9 @@ import {
   getFriendRequests,
   acceptFriendRequest,
   rejectFriendRequest,
-  deleteContact
-} from '../../api/services/ApplicantService/contacts';
+  deleteContact,
+  searchApplicants
+} from '../../api/services';
 import './ContactsPage.css';
 
 const ContactsPage = () => {
@@ -26,6 +27,7 @@ const ContactsPage = () => {
   const [contacts, setContacts] = useState([]);
   const [requests, setRequests] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Загрузка контактов
   const [fetchContacts, loadingContacts, contactsError] = useFetch(async () => {
@@ -40,7 +42,7 @@ const ContactsPage = () => {
   });
 
   // Отправка запроса в друзья
-  const [sendRequest, sendingRequest] = useFetch(async (receiverId) => {
+  const [sendRequest, sendingRequest, errorSendingRequest] = useFetch(async (receiverId) => {
     await sendFriendRequest(receiverId);
     alert('Запрос в друзья отправлен!');
     // Очищаем поиск
@@ -69,11 +71,23 @@ const ContactsPage = () => {
     }
   });
 
-  // Поиск пользователей (заглушка, т.к. нет эндпоинта для поиска)
-  const handleSearch = (query) => {
-    // TODO: добавить эндпоинт для поиска пользователей
-    // Пока показываем заглушку
-    alert('Функция поиска будет доступна в ближайшее время');
+  // Поиск пользователей
+  const handleSearch = async (searchParams) => {
+    setSearchLoading(true);
+    try {
+      const response = await searchApplicants(searchParams);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error('Search error:', error);
+      alert('Ошибка при поиске пользователей');
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleClearResults = () => {
+    setSearchResults(null);
   };
 
   useEffect(() => {
@@ -83,8 +97,8 @@ const ContactsPage = () => {
     }
   }, [IsApplicant]);
 
-  const handleViewProfile = (contactId) => {
-    navigate(`/applicant/${contactId}`);
+  const handleViewProfile = (ApplicantId) => {
+    navigate(`/applicant/${ApplicantId}`);
   };
 
   const handleSendRequest = (receiverId) => {
@@ -180,7 +194,7 @@ const ContactsPage = () => {
                 <div className="contacts-grid">
                   {contacts.map(contact => (
                     <ContactCard
-                      key={contact.id}
+                      key={contact.contactId}
                       contact={contact}
                       onViewProfile={handleViewProfile}
                       onRemoveContact={removeContact}
@@ -244,16 +258,18 @@ const ContactsPage = () => {
           {/* Поиск друзей */}
           {activeTab === 'search' && (
             <UserSearch
+              contacts ={contacts}
               onSearch={handleSearch}
               onSendRequest={handleSendRequest}
-              isLoading={false}
+              isLoading={searchLoading}
               isSending={sendingRequest}
               searchResults={searchResults}
+              onClearResults={handleClearResults}
             />
           )}
         </div>
+        {/* {errorSendingRequest && <p style={{color: "red", textAlign: "center", marginBottom: "20px"}}>{errorSendingRequest}</p>} */}
       </div>
-
       <Footer />
     </div>
   );

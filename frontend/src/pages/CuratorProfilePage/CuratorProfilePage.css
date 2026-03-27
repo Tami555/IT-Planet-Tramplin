@@ -21,7 +21,7 @@
 
 .header-icon {
   background: rgba(255, 255, 255, 0.2);
-  padding: 12px;
+  /* padding: 12px; */
   border-radius: var(--border-radius-md);
 }
 

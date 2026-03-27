@@ -26,6 +26,7 @@ export const APPLICANT_ENDPOINTS = {
   GET_ME: '/applicants/me',
   GET_APPLICATIONS: '/applicants/me/applications',
   UPDATE_PROFILE: '/applicants/me',
+  SEARCH_APPLICANTS: '/applicants',
 
   APPLY: '/applicants/me/applications',
   DELETE_APPLY: '/applicants/me/applications/:id',

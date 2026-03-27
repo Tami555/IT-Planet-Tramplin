@@ -9,7 +9,7 @@ export { getOpportunities, getOpportunityById, createOpportunity, updateOpportun
 
 // Applicant
 export { getCurrentApplicant, updateApplicantProfile,
-     updatePrivacySettings, uploadAvatar, uploadResume } from "./ApplicantService/applicant";
+     updatePrivacySettings, uploadAvatar, uploadResume, searchApplicants } from "./ApplicantService/applicant";
 export { addToFavorites, removeFromFavorites, getUserFavorites } from "./ApplicantService/favorites";
 export { getUserApplications, applyToOpportunity, revokeOpportunity } from "./ApplicantService/applications";
 

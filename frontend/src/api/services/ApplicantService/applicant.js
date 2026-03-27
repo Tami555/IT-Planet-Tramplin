@@ -4,6 +4,29 @@ import { handleApiError } from "../../utils/errors/errorHandlers";
 import { apiRequest } from "../../utils/apiRequest";
 
 
+//  функция поиска соискателей
+export const searchApplicants = async (filters = {}) => {
+  return await apiRequest(
+    async () => {
+      const params = new URLSearchParams();
+      
+      if (filters.search) params.append('search', filters.search);
+      if (filters.skills && filters.skills.length > 0) {
+        params.append('skills', filters.skills.join(','));
+      }
+      if (filters.university) params.append('university', filters.university);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.page) params.append('page', filters.page);
+      if (filters.limit) params.append('limit', filters.limit);
+      
+      const url = `${getBackendUrl(APPLICANT_ENDPOINTS.SEARCH_APPLICANTS)}?${params.toString()}`;
+      const response = await apiClient.get(url);
+      return response.data;
+    },
+    handleApiError
+  );
+};
+
 // Получение профиля текущего соискателя
 export const getCurrentApplicant = async () => {
   return await apiRequest(

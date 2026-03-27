@@ -29,7 +29,7 @@ const ApplicantViewPage = () => {
       const data = await getApplicantById(id);
       setApplicant(data);
       const currentUserFriends = await getContacts();
-      setIsFriend(currentUserFriends.map(f => f?.id).includes(id))
+      setIsFriend(currentUserFriends.map(f => f?.applicant.id).includes(id))
     }
     else{
       const data = await getUserDetails(id);

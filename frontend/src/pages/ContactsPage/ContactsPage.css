@@ -44,7 +44,7 @@
 
 .header-icon {
   color: var(--primary-accent);
-  margin-bottom: 16px;
+  /* margin-bottom: 16px; */
 }
 
 .contacts-title {

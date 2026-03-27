@@ -6,12 +6,13 @@ import { getMediaData } from "../../utils/files";
 import { default_user_ava} from "../../images/index";
 
 const ContactCard = ({ contact, onViewProfile, onRemoveContact, isRemoving }) => {
+
   return (
     <div className="contact-card">
       <div className="contact-avatar">
         <img 
-          src={contact.avatarUrl ? getMediaData(contact.avatarUrl) : default_user_ava} 
-          alt={`${contact.firstName} ${contact.lastName}`}
+          src={contact.applicant.avatarUrl ? getMediaData(contact.applicant.avatarUrl) : default_user_ava} 
+          alt={`${contact.applicant.firstName} ${contact.applicant.lastName}`}
           className="contact-avatar-img"
           onError={(e) => { e.target.src = default_user_ava; }} 
         />
@@ -19,28 +20,28 @@ const ContactCard = ({ contact, onViewProfile, onRemoveContact, isRemoving }) =>
       
       <div className="contact-info">
         <h3 className="contact-name">
-          {contact.firstName} {contact.lastName}
+          {contact.applicant.firstName} {contact.applicant.lastName}
         </h3>
         
         {/* Контейнер для мета-информации */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {contact.university && (
+            {contact.applicant.university && (
             <div className="contact-detail">
                 <GraduationCap size={12} />
-                <span>{contact.university}</span>
+                <span>{contact.applicant.university}</span>
             </div>
             )}
             
-            {contact.skills && contact.skills.length > 0 && (
+            {contact.applicant.skills && contact.applicant.skills.length > 0 && (
             <div className="contact-skills">
                 <Code size={14} />
                 <div className="skills-list">
-                {contact.skills.slice(0, 3).map((skill, idx) => (
+                {contact.applicant.skills.slice(0, 3).map((skill, idx) => (
                     <span key={idx} className="skill-badge">{skill}</span>
                 ))}
-                {contact.skills.length > 3 && (
-                    <span className="skill-badge" title={contact.skills.slice(3).join(', ')}>
-                    +{contact.skills.length - 3}
+                {contact.applicant.skills.length > 3 && (
+                    <span className="skill-badge" title={contact.applicant.skills.slice(3).join(', ')}>
+                    +{contact.applicant.skills.length - 3}
                     </span>
                 )}
                 </div>
@@ -53,7 +54,7 @@ const ContactCard = ({ contact, onViewProfile, onRemoveContact, isRemoving }) =>
         <Button
           variant="outline"
           size="small"
-          onClick={() => onViewProfile(contact.id)}
+          onClick={() => onViewProfile(contact.applicant.id)}
         >
           Профиль
         </Button>
@@ -61,7 +62,7 @@ const ContactCard = ({ contact, onViewProfile, onRemoveContact, isRemoving }) =>
         <Button
           variant="ghost"
           size="icon" 
-          onClick={() => onRemoveContact(contact.id)}
+          onClick={() => onRemoveContact(contact.contactId)}
           disabled={isRemoving}
           className="text-red-500 hover:text-red-600 hover:bg-red-50" 
           title="Удалить контакт"
