@@ -37,6 +37,7 @@ export const APPLICANT_ENDPOINTS = {
 
 
 export const EMPLOYER_ENDPOINTS = {
+  GET_ALL: '/employers',
   GET_ME: '/employers/me',
   GET_PUBLIC_PROFILE: '/employers/:id/public',
   UPDATE_PROFILE: '/employers/me',

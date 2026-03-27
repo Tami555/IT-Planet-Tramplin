@@ -410,7 +410,7 @@ const CuratorProfilePage = () => {
               />
               <InputBlock
                 label="Отображаемое имя"
-                value={newCurator.displayName}
+                value={newCurator?.displayName}
                 onChange={(e) => setNewCurator({ ...newCurator, displayName: e.target.value })}
                 placeholder="Мария Петрова"
                 required

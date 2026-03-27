@@ -2,7 +2,28 @@ import { getBackendUrl, EMPLOYER_ENDPOINTS } from "../../config/endpoints";
 import { apiRequest } from "../../utils/apiRequest";
 import { apiClient } from "../../config/apiClient";
 import axios from "axios";
+import { handleApiError } from "../../utils/errors/errorHandlers";
 
+
+// Получение списка компаний с фильтрацией
+export const getEmployers = async (filters = {}) => {
+  return await apiRequest(
+    async () => {
+      const params = new URLSearchParams();
+      
+      if (filters.search) params.append('search', filters.search);
+      if (filters.industry) params.append('industry', filters.industry);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.page) params.append('page', filters.page);
+      if (filters.limit) params.append('limit', filters.limit);
+      
+      const url = `${getBackendUrl(EMPLOYER_ENDPOINTS.GET_ALL)}?${params.toString()}`;
+      const response = await apiClient.get(url);
+      return response.data;
+    },
+    handleApiError
+  );
+};
 
 // Получить профиль текущего работодателя
 export const getCurrentEmployer = async () => {
