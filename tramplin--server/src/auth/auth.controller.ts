@@ -27,6 +27,8 @@ import {
 import {CurrentUser} from '@/common/decorators/current-user.decorator';
 import {Public} from '@/common/decorators/public.decorator';
 import {JwtPayload} from './interfaces/jwt-payload.interface';
+import {RegisterApplicantDto} from "@/auth/dto/register-applicant.dto";
+import {RegisterEmployerDto} from "@/auth/dto/register-employer.dto";
 
 @ApiTags('Аутентификация')
 @Controller('auth')
@@ -38,18 +40,81 @@ export class AuthController {
     ) {
     }
 
-    @Public()
-    @Post('register')
+    @ApiBearerAuth('Bearer')
+    @Get('verify')
     @ApiOperation({
-        summary: 'Регистрация нового пользователя',
-        description:
-            'Создаёт аккаунт соискателя или работодателя. Работодатели автоматически получают статус верификации PENDING.',
+        summary: 'Проверка валидности access-токена',
+        description: 'Возвращает объект с полем valid: true/false',
     })
-    @ApiResponse({status: 201, description: 'Пользователь успешно зарегистрирован', type: AuthResponseDto})
-    @ApiResponse({status: 400, description: 'Некорректные данные'})
-    @ApiResponse({status: 409, description: 'Email уже занят'})
-    register(@Body() dto: RegisterDto) {
-        return this.authService.register(dto);
+    @ApiResponse({ status: 200, description: 'Результат проверки' })
+    async verifyToken(@Req() req: Request) {
+        try {
+            const authHeader = req.headers['authorization'];
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return { valid: false };
+            }
+
+            const token = authHeader.slice(7);
+            const payload = this.jwtService.verify(token, {
+                secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+            });
+
+            const user = await this.authService.findUserById(payload.sub);
+            if (!user || !user.isActive) {
+                return { valid: false };
+            }
+
+            return {
+                valid: true,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                },
+            };
+        } catch (error) {
+            return { valid: false };
+        }
+    }
+
+    // @Public()
+    // @Post('register')
+    // @ApiOperation({
+    //     summary: 'Регистрация нового пользователя',
+    //     description:
+    //         'Создаёт аккаунт соискателя или работодателя. Работодатели автоматически получают статус верификации PENDING.',
+    // })
+    // @ApiResponse({status: 201, description: 'Пользователь успешно зарегистрирован', type: AuthResponseDto})
+    // @ApiResponse({status: 400, description: 'Некорректные данные'})
+    // @ApiResponse({status: 409, description: 'Email уже занят'})
+    // register(@Body() dto: RegisterDto) {
+    //     return this.authService.register(dto);
+    // }
+
+    @Public()
+    @Post('register/applicant')
+    @ApiOperation({
+        summary: 'Регистрация соискателя',
+        description: 'Создаёт аккаунт соискателя с профилем'
+    })
+    @ApiResponse({ status: 201, description: 'Соискатель успешно зарегистрирован', type: AuthResponseDto })
+    @ApiResponse({ status: 400, description: 'Некорректные данные' })
+    @ApiResponse({ status: 409, description: 'Email уже занят' })
+    registerApplicant(@Body() dto: RegisterApplicantDto) {
+        return this.authService.registerApplicant(dto);
+    }
+
+    @Public()
+    @Post('register/employer')
+    @ApiOperation({
+        summary: 'Регистрация работодателя',
+        description: 'Создаёт аккаунт работодателя с профилем компании'
+    })
+    @ApiResponse({ status: 201, description: 'Работодатель успешно зарегистрирован', type: AuthResponseDto })
+    @ApiResponse({ status: 400, description: 'Некорректные данные' })
+    @ApiResponse({ status: 409, description: 'Email уже занят' })
+    registerEmployer(@Body() dto: RegisterEmployerDto) {
+        return this.authService.registerEmployer(dto);
     }
 
     @Public()

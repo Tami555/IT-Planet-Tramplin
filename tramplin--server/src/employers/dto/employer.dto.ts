@@ -5,9 +5,10 @@ import {
     IsOptional,
     IsString,
     MaxLength,
-    Matches,
+    Matches, IsBoolean, Min, IsInt, Max,
 } from 'class-validator';
 import {ApplicationStatus} from '@prisma/client';
+import {Type} from "class-transformer";
 
 export class UpdateEmployerProfileDto {
     @ApiPropertyOptional({example: 'Яндекс', description: 'Название компании'})
@@ -43,27 +44,33 @@ export class UpdateEmployerProfileDto {
     @IsOptional()
     @IsString()
     city?: string;
-}
 
-export class SubmitVerificationDto {
     @ApiPropertyOptional({
-        example: 'hr@yandex-team.ru',
-        description: 'Корпоративная почта (должна совпадать с доменом компании)',
+        example: 'hr@techcompany.ru',
+        description: 'Корпоративный email для верификации'
     })
     @IsOptional()
     @IsString()
     corporateEmail?: string;
 
-    @ApiPropertyOptional({example: '7736207543', description: 'ИНН организации (10 цифр)'})
+    @ApiPropertyOptional({
+        example: '7736207543',
+        description: 'ИНН организации (10 цифр)'
+    })
     @IsOptional()
     @IsString()
-    @Matches(/^\d{10}$/, {message: 'ИНН должен содержать ровно 10 цифр'})
+    @Matches(/^\d{10}$/, { message: 'ИНН должен содержать ровно 10 цифр' })
     inn?: string;
+}
 
-    @ApiPropertyOptional({example: 'https://linkedin.com/company/yandex', description: 'Ссылка на профиль компании'})
+export class SubmitVerificationDto {
+    @ApiPropertyOptional({
+        example: true,
+        description: 'Подтверждение, что данные для верификации заполнены'
+    })
     @IsOptional()
-    @IsString()
-    websiteUrl?: string;
+    @IsBoolean()
+    confirm?: boolean;
 }
 
 export class ReviewVerificationDto {
@@ -102,4 +109,19 @@ export class EmployerApplicationsFilterDto {
     @IsOptional()
     @IsEnum(ApplicationStatus)
     status?: ApplicationStatus;
+
+    @ApiPropertyOptional({ default: 1, description: 'Страница' })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page?: number = 1;
+
+    @ApiPropertyOptional({ default: 20, description: 'Количество на странице' })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(100)
+    limit?: number = 20;
 }

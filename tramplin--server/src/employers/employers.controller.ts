@@ -19,6 +19,7 @@ import {
     ApiParam,
     ApiConsumes,
     ApiQuery,
+    ApiBody
 } from '@nestjs/swagger';
 import {FileInterceptor, FilesInterceptor} from '@nestjs/platform-express';
 import {memoryStorage} from 'multer';
@@ -36,6 +37,7 @@ import {Roles} from '@/common/decorators/roles.decorator';
 import {CurrentUser} from '@/common/decorators/current-user.decorator';
 import {Public} from '@/common/decorators/public.decorator';
 import {JwtPayload} from '@/auth/interfaces/jwt-payload.interface';
+import {SearchEmployersDto} from "@/common/dto/search.dto";
 
 @ApiTags('Работодатели (личный кабинет)')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -78,6 +80,18 @@ export class EmployersController {
     @UseInterceptors(FileInterceptor('file', {storage: memoryStorage()}))
     @ApiConsumes('multipart/form-data')
     @ApiOperation({summary: 'Загрузить логотип компании'})
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Файл логотипа (JPEG, PNG, WEBP, GIF)',
+                },
+            },
+        },
+    })
     @ApiResponse({status: 201, description: 'Логотип загружен'})
     uploadLogo(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
         return this.employersService.uploadLogo(user.sub, file);
@@ -89,6 +103,21 @@ export class EmployersController {
     @UseInterceptors(FilesInterceptor('files', 10, {storage: memoryStorage()}))
     @ApiConsumes('multipart/form-data')
     @ApiOperation({summary: 'Загрузить фото офиса', description: 'До 10 фотографий.'})
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                files: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'binary',
+                    },
+                    description: 'Файлы изображений (до 10 шт)',
+                },
+            },
+        },
+    })
     @ApiResponse({status: 201, description: 'Фото загружены'})
     uploadOfficePhotos(@CurrentUser() user: JwtPayload, @UploadedFiles() files: Express.Multer.File[]) {
         return this.employersService.uploadOfficePhotos(user.sub, files);
@@ -105,7 +134,7 @@ export class EmployersController {
     @ApiResponse({status: 201, description: 'Заявка на верификацию отправлена'})
     @ApiResponse({status: 400, description: 'Нужен email или ИНН / компания уже верифицирована'})
     submitVerification(@CurrentUser() user: JwtPayload, @Body() dto: SubmitVerificationDto) {
-        return this.employersService.submitVerification(user.sub, dto);
+        return this.employersService.submitVerification(user.sub);
     }
 
     @Get('me/opportunities')
@@ -128,17 +157,21 @@ export class EmployersController {
     @Get('me/applications')
     @Roles(Role.EMPLOYER)
     @ApiBearerAuth('Bearer')
-    @ApiOperation({summary: 'Отклики на мои вакансии'})
-    @ApiResponse({status: 200, description: 'Список откликов'})
-    @ApiQuery({name: 'page', required: false})
-    @ApiQuery({name: 'limit', required: false})
+    @ApiOperation({ summary: 'Отклики на мои вакансии' })
+    @ApiResponse({ status: 200, description: 'Список откликов' })
     getApplications(
         @CurrentUser() user: JwtPayload,
         @Query() filter: EmployerApplicationsFilterDto,
-        @Query('page') page?: number,
-        @Query('limit') limit?: number,
     ) {
-        return this.employersService.getApplications(user.sub, filter, page, limit);
+        const page = filter.page && filter.page > 0 ? filter.page : 1;
+        const limit = filter.limit && filter.limit > 0 ? filter.limit : 20;
+
+        return this.employersService.getApplications(
+            user.sub,
+            filter,
+            page,
+            limit
+        );
     }
 
     @Patch('me/applications/:applicationId/status')
@@ -168,5 +201,16 @@ export class EmployersController {
     @ApiResponse({status: 403, description: 'Нет отклика от этого соискателя'})
     getApplicantProfile(@CurrentUser() user: JwtPayload, @Param('applicantId') applicantId: string) {
         return this.employersService.getApplicantProfile(user.sub, applicantId);
+    }
+
+    @Public()
+    @Get()
+    @ApiOperation({
+        summary: 'Поиск компаний',
+        description: 'Публичный эндпоинт для поиска верифицированных компаний с фильтрацией.',
+    })
+    @ApiResponse({ status: 200, description: 'Список компаний' })
+    searchEmployers(@Query() dto: SearchEmployersDto) {
+        return this.employersService.searchEmployers(dto);
     }
 }

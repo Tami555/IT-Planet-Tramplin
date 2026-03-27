@@ -16,6 +16,7 @@ import {
 } from './dto/applicant.dto';
 import {FilesService} from '@/files/files.service';
 import {buildPaginatedResponse} from '@/common/dto/pagination.dto';
+import {SearchApplicantsDto} from "@/common/dto/search.dto";
 
 @Injectable()
 export class ApplicantsService {
@@ -25,14 +26,107 @@ export class ApplicantsService {
     ) {
     }
 
+    async searchApplicants(dto: SearchApplicantsDto, viewerUserId?: string) {
+        const { search, skills, university, city, page = 1, limit = 20 } = dto;
+        const skip = (page - 1) * limit;
+
+        const where: any = {
+            privacyProfile: 'PUBLIC',
+        };
+
+        if (viewerUserId) {
+            const viewer = await this.prisma.applicant.findUnique({
+                where: { userId: viewerUserId },
+            });
+
+            if (viewer) {
+                const contacts = await this.prisma.contact.findMany({
+                    where: {
+                        OR: [
+                            { senderId: viewer.id, status: 'ACCEPTED' },
+                            { receiverId: viewer.id, status: 'ACCEPTED' },
+                        ],
+                    },
+                    select: {
+                        senderId: true,
+                        receiverId: true,
+                    },
+                });
+
+                const contactIds = contacts.flatMap(c =>
+                    c.senderId === viewer.id ? [c.receiverId] : [c.senderId]
+                );
+
+                where.OR = [
+                    { privacyProfile: 'PUBLIC' },
+                    { id: { in: contactIds }, privacyProfile: 'CONTACTS' },
+                ];
+            }
+        }
+
+        if (search) {
+            where.OR = [
+                ...(where.OR || []),
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+            ].filter(Boolean);
+        }
+
+        if (university) {
+            where.university = { contains: university, mode: 'insensitive' };
+        }
+
+
+        if (skills) {
+            const skillsArray = skills.split(',').map(s => s.trim());
+            where.skills = { hasSome: skillsArray };
+        }
+
+        const [data, total] = await Promise.all([
+            this.prisma.applicant.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                    university: true,
+                    graduationYear: true,
+                    skills: true,
+                    privacyProfile: true,
+                    user: {
+                        select: {
+                            email: true,
+                            createdAt: true,
+                        },
+                    },
+                },
+            }),
+            this.prisma.applicant.count({ where }),
+        ]);
+
+        return buildPaginatedResponse(data, total, page, limit);
+    }
+
     async getMyProfile(userId: string) {
         return this.getApplicantByUserId(userId);
     }
 
     async getProfile(targetApplicantId: string, viewerUserId?: string) {
         const target = await this.prisma.applicant.findUnique({
-            where: {id: targetApplicantId},
-            include: {user: {select: {email: true, displayName: true, createdAt: true}}},
+            where: { id: targetApplicantId },
+            include: {
+                user: {
+                    select: {
+                        displayName: true,
+                        email: true,
+                        createdAt: true
+                    }
+                }
+            },
         });
 
         if (!target) throw new NotFoundException('Профиль соискателя не найден');
@@ -319,8 +413,8 @@ export class ApplicantsService {
         const contacts = await this.prisma.contact.findMany({
             where: {
                 OR: [
-                    {senderId: applicant.id, status: ContactStatus.ACCEPTED},
-                    {receiverId: applicant.id, status: ContactStatus.ACCEPTED},
+                    { senderId: applicant.id, status: ContactStatus.ACCEPTED },
+                    { receiverId: applicant.id, status: ContactStatus.ACCEPTED },
                 ],
             },
             include: {
@@ -349,9 +443,26 @@ export class ApplicantsService {
             },
         });
 
-        return contacts.map((c) =>
-            c.senderId === applicant.id ? c.receiver : c.sender,
-        );
+        return contacts.map((contact) => {
+            const isSender = contact.senderId === applicant.id;
+            const otherPerson = isSender ? contact.receiver : contact.sender;
+
+            return {
+                contactId: contact.id,
+                status: contact.status,
+                createdAt: contact.createdAt,
+                updatedAt: contact.updatedAt,
+                applicant: {
+                    id: otherPerson.id,
+                    firstName: otherPerson.firstName,
+                    lastName: otherPerson.lastName,
+                    avatarUrl: otherPerson.avatarUrl,
+                    university: otherPerson.university,
+                    skills: otherPerson.skills,
+                    privacyProfile: otherPerson.privacyProfile,
+                },
+            };
+        });
     }
 
     async getPendingContactRequests(userId: string) {
@@ -369,21 +480,31 @@ export class ApplicantsService {
 
     async removeContact(userId: string, contactId: string) {
         const applicant = await this.getApplicantByUserId(userId);
-        const contact = await this.prisma.contact.findUnique({where: {id: contactId}});
+        const contact = await this.prisma.contact.findUnique({ where: { id: contactId } });
 
         if (!contact) throw new NotFoundException('Контакт не найден');
         if (contact.senderId !== applicant.id && contact.receiverId !== applicant.id) {
             throw new ForbiddenException('Это не ваш контакт');
         }
 
-        await this.prisma.contact.delete({where: {id: contactId}});
-        return {message: 'Контакт удалён'};
+        await this.prisma.contact.delete({ where: { id: contactId } });
+        return { message: 'Контакт удалён' };
     }
 
     async getApplicantByUserId(userId: string) {
         const applicant = await this.prisma.applicant.findUnique({
-            where: {userId},
+            where: { userId },
+            include: {
+                user: {
+                    select: {
+                        email: true,
+                        displayName: true,
+                        createdAt: true,
+                    }
+                }
+            }
         });
+
         if (!applicant) {
             throw new NotFoundException('Профиль соискателя не найден. Заполните личный кабинет');
         }

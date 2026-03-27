@@ -19,6 +19,7 @@ import {
     ApiParam,
     ApiConsumes,
     ApiQuery,
+    ApiBody
 } from '@nestjs/swagger';
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {memoryStorage} from 'multer';
@@ -122,6 +123,21 @@ export class OpportunitiesController {
     @ApiConsumes('multipart/form-data')
     @ApiParam({name: 'id', description: 'UUID возможности'})
     @ApiOperation({summary: 'Загрузить медиа', description: 'До 10 файлов.'})
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                files: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'binary',
+                    },
+                    description: 'Медиафайлы (изображения, видео)',
+                },
+            },
+        },
+    })
     @ApiResponse({status: 201, description: 'Загружено'})
     uploadMedia(
         @Param('id') id: string,
