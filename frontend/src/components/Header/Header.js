@@ -27,11 +27,11 @@ const Header = () => {
   };
 
   const [getCurrentUser, loadingUser] = useFetch(async () => {
-    if (IsApplicant){
+    if (IsApplicant == true){
       const res = await getCurrentApplicant();
       setCurrentUser(res);
     }
-    if (IsAuth && !IsAdmin && !IsApplicant) {
+    else if (IsAuth && !IsAdmin && !IsApplicant) {
       const res = await getCurrentEmployer();
       setCurrentUser(res);
     }
@@ -41,6 +41,7 @@ const Header = () => {
     return;
   });
   useEffect(() => {getCurrentUser()}, [])
+
 
   return (
     <header className="header">
@@ -105,7 +106,7 @@ const Header = () => {
                 onClick={() => navigate(getProfilePath())}
               >
                 <img 
-                  src={currentUser?.avatarUrl ? getMediaData(currentUser?.avatarUrl) : (currentUser?.logoUrl ? currentUser?.logoUrl : default_user_ava)} 
+                  src={currentUser?.avatarUrl ? getMediaData(currentUser?.avatarUrl) : (currentUser?.logoUrl ? getMediaData(currentUser?.logoUrl) : default_user_ava)} 
                   alt={currentUser?.firstName || 'User'}
                 />
               </button>

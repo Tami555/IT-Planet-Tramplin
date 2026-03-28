@@ -10,6 +10,7 @@ import { useFetch } from '../../hooks/useFetch';
 import { getUserApplications, revokeOpportunity } from '../../api/services';
 import './ApplicationsPage.css';
 import { useFavorites } from '../../hooks/useFavorites';
+import { getMediaData } from '../../utils/files';
 
 
 const ApplicationsPage = () => {
@@ -147,7 +148,7 @@ const ApplicationsPage = () => {
       salaryTo: opportunity.salaryTo,
       company: {
         name: opportunity.employer?.companyName || 'Компания',
-        logo: opportunity.employer?.logoUrl || null
+        logo: opportunity.employer?.logoUrl ? getMediaData(opportunity.employer?.logoUrl) : null
       },
       tags: opportunity.tags || [],
       employer: opportunity.employer

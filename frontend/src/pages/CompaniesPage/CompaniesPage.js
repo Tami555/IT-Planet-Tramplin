@@ -10,6 +10,7 @@ import { getEmployers } from '../../api/services';
 import { supportedCities } from '../../data/mockData';
 import './CompaniesPage.css';
 import { default_company_ava } from '../../images';
+import { getMediaData } from '../../utils/files';
 
 const CompaniesPage = () => {
   const navigate = useNavigate();
@@ -241,7 +242,7 @@ const CompaniesPage = () => {
                   <div key={company.id} className="company-card">
                     <div className="company-card-header">
                       <img 
-                        src={company.logoUrl || default_company_ava} 
+                        src={company.logoUrl ? getMediaData(company.logoUrl) : default_company_ava} 
                         alt={company.companyName}
                         className="company-logo-large"
                         onError={(e) => {

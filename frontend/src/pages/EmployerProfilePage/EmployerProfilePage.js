@@ -334,7 +334,7 @@ const EmployerProfilePage = () => {
             <div className="logo-section">
               <div className="logo-wrapper">
                 <img 
-                  src={profile.logoUrl || default_user_ava} 
+                  src={profile.logoUrl ? getMediaData(profile.logoUrl) : default_user_ava} 
                   alt={profile.companyName}
                   className="logo-company-large"
                 />

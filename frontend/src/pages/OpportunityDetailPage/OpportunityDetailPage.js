@@ -13,6 +13,7 @@ import { getOpportunityById, getOpportunities, applyToOpportunity, getTags, getU
 import Footer from '../../components/Footer/Footer';
 import './OpportunityDetailPage.css';
 import { default_company_ava } from '../../images';
+import { getMediaData } from '../../utils/files';
 
 
 const OpportunityDetailPage = () => {
@@ -198,7 +199,7 @@ const OpportunityDetailPage = () => {
             <div className="detail-header">
               <div className="company-badge">
                 <img 
-                  src={opportunity.employer?.logoUrl || default_company_ava} 
+                  src={opportunity.employer?.logoUrl ? getMediaData(opportunity.employer?.logoUrl) : default_company_ava} 
                   alt={opportunity.employer?.companyName}
                   className="company-logo-large"
                   onError={(e) => {
@@ -426,7 +427,7 @@ const OpportunityDetailPage = () => {
                       onClick={() => navigate(`/opportunity/${similar.id}`)}
                     >
                       <img 
-                        src={similar.employer?.logoUrl || default_company_ava} 
+                        src={similar.employer?.logoUrl ? getMediaData(similar.employer?.logoUrl) : default_company_ava} 
                         alt={similar.employer?.companyName}
                         className="similar-logo"
                         onError={(e) => {

@@ -93,7 +93,7 @@ const ApplicationsList = ({ applications, onStatusChange, isLoading }) => {
                 <div className="application-actions">
                   {app.applicant.resumeUrl && (
                     <a 
-                      href={app.applicant.resumeUrl} 
+                      href={getMediaData(app.applicant.resumeUrl)} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="action-icon"

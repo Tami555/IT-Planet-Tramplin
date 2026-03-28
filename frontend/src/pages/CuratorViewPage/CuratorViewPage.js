@@ -12,6 +12,7 @@ import { useFetch } from '../../hooks/useFetch';
 import { getUserDetails } from '../../api/services';
 import './CuratorViewPage.css';
 import { default_user_ava } from '../../images';
+import { getMediaData } from '../../utils/files';
 
 
 const CuratorViewPage = () => {
@@ -139,7 +140,7 @@ const CuratorViewPage = () => {
             <div className="avatar-section-curator">
               <div className="avatar-wrapper">
                 <img 
-                  src={curator.avatarUrl || default_user_ava} 
+                  src={curator.avatarUrl ? getMediaData(curator.avatarUrl) : default_user_ava} 
                   alt={curator.displayName}
                   className="curator-avatar"
                   onError={(e) => {

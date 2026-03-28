@@ -13,6 +13,7 @@ import { getOpportunities, applyToOpportunity, getUserApplications, getTags } fr
 import Footer from '../../components/Footer/Footer';
 import './MainPage.css';
 import { cityCoordinates } from '../../data/mockData';
+import { getMediaData } from '../../utils/files';
 
 
 const MainPage = () => {
@@ -176,7 +177,7 @@ const MainPage = () => {
       : cityCoordinates[opp.city] || cityCoordinates['Москва'],
     company: {
       name: opp.employer?.companyName || 'Компания',
-      logo: opp.employer?.logoUrl || null
+      logo: opp.employer?.logoUrl ? getMediaData(opp.employer?.logoUrl) : null
     },
     salary: opp.salaryFrom || null,
     format: opp.format?.toLowerCase() || 'offline',
@@ -395,7 +396,7 @@ const MainPage = () => {
                             ...opportunity,
                             company: {
                               name: opportunity.employer?.companyName,
-                              logo: opportunity.employer?.logoUrl
+                              logo: getMediaData(opportunity.employer?.logoUrl )
                             },
                             salary: opportunity.salaryFrom
                           }}
@@ -467,7 +468,7 @@ const MainPage = () => {
                 ...selectedOpportunity,
                 company: {
                   name: selectedOpportunity.employer?.companyName,
-                  logo: selectedOpportunity.employer?.logoUrl
+                  logo: getMediaData(selectedOpportunity.employer?.logoUrl)
                 },
                 salary: selectedOpportunity.salaryFrom,
                 tags: selectedOpportunity.tags?.map(t => t.tag?.id) || []

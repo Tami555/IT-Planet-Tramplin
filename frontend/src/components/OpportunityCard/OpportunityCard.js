@@ -5,6 +5,7 @@ import Button from '../UI/Button/Button';
 import './OpportunityCard.css';
 import { useAuth } from '../../contexts/AuthContext';
 import { default_company_ava } from "../../images/index"
+import { getMediaData } from '../../utils/files';
 
 
 const OpportunityCard = ({ 
@@ -62,7 +63,7 @@ const OpportunityCard = ({
       <div className="card-header">
         <div className="company-info">
           <img 
-            src={opportunity.company?.logo || opportunity.employer?.logoUrl || default_company_ava} 
+            src={opportunity.company?.logo || getMediaData(opportunity.employer?.logoUrl) || default_company_ava} 
             alt={opportunity.company?.name || opportunity.employer?.companyName}
             className="company-logo"
             onError={(e) => {

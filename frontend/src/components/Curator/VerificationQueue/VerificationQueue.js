@@ -3,6 +3,7 @@ import { Check, X, Eye, Building2, Mail, MapPin, Globe } from 'lucide-react';
 import Button from '../../UI/Button/Button';
 import './VerificationQueue.css';
 import { useNavigate } from 'react-router-dom';
+import {getMediaData } from "../../../utils/files";
 
 const VerificationQueue = ({ items, onReview, loading }) => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const VerificationQueue = ({ items, onReview, loading }) => {
               <div className="company-info-verif">
                 <div className="company-logo-small">
                   {item.logoUrl ? (
-                    <img src={item.logoUrl} alt={item.companyName} />
+                    <img src={getMediaData(item.logoUrl)} alt={item.companyName} />
                   ) : (
                     <Building2 size={24} />
                   )}
