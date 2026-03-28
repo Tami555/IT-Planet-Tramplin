@@ -10,7 +10,8 @@ export const USER_ENDPOINTS = {
   LOGIN: '/auth/login',
   REGISTRATION: '/auth/register',
   REFRESH: '/auth/refresh',
-  LOGOUT: '/auth/logout'
+  LOGOUT: '/auth/logout',
+  VERIFY: '/auth/verify'
 };
 
 export const OPPORTUNITY_ENDPOINTS = {

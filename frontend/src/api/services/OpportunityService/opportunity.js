@@ -2,6 +2,8 @@ import { getBackendUrl, OPPORTUNITY_ENDPOINTS } from "../../config/endpoints";
 import { apiClient } from "../../config/apiClient";
 import { handleApiError } from "../../utils/errors/errorHandlers";
 import { apiRequest } from "../../utils/apiRequest";
+import axios from "axios";
+import { check_token } from "../UserService/tokens";
 
 
 // Получение списка возможностей с фильтрацией
@@ -24,7 +26,7 @@ export const getOpportunities = async (filters = {}) => {
       if (filters.limit) params.append('limit', filters.limit);
       
       const url = `${getBackendUrl(OPPORTUNITY_ENDPOINTS.GET_ALL)}?${params.toString()}`;
-      const response = await apiClient.get(url);
+      const response = await axios.get(url);
       
       return response.data;
     },
@@ -37,7 +39,7 @@ export const getOpportunityById = async (id) => {
   return await apiRequest(
     async () => {
       const url = getBackendUrl(OPPORTUNITY_ENDPOINTS.GET_BY_ID.replace(':id', id));
-      const response = await apiClient.get(url);
+      const response = await axios.get(url);
       return response.data;
     },
     handleApiError
@@ -47,6 +49,8 @@ export const getOpportunityById = async (id) => {
 // Создать возможность
 export const createOpportunity = async (opportunityData) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const response = await apiClient.post(getBackendUrl(OPPORTUNITY_ENDPOINTS.CREATE), opportunityData);
     return response.data;
   });
@@ -55,6 +59,8 @@ export const createOpportunity = async (opportunityData) => {
 // Обновить возможность
 export const updateOpportunity = async (id, opportunityData) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const response = await apiClient.patch(
       getBackendUrl(OPPORTUNITY_ENDPOINTS.UPDATE.replace(':id', id)),
       opportunityData
@@ -66,6 +72,8 @@ export const updateOpportunity = async (id, opportunityData) => {
 // Удалить возможность
 export const deleteOpportunity = async (id) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const response = await apiClient.delete(getBackendUrl(OPPORTUNITY_ENDPOINTS.DELETE.replace(':id', id)));
     return response.data;
   });
@@ -74,6 +82,8 @@ export const deleteOpportunity = async (id) => {
 // Загрузить медиа для возможности
 export const uploadOpportunityMedia = async (opportunityId, files) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+    
     const formData = new FormData();
     files.forEach(file => {
       formData.append('files', file);

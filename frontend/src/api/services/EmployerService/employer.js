@@ -3,6 +3,7 @@ import { apiRequest } from "../../utils/apiRequest";
 import { apiClient } from "../../config/apiClient";
 import axios from "axios";
 import { handleApiError } from "../../utils/errors/errorHandlers";
+import { check_token } from "../UserService/tokens";
 
 
 // Получение списка компаний с фильтрацией
@@ -18,7 +19,7 @@ export const getEmployers = async (filters = {}) => {
       if (filters.limit) params.append('limit', filters.limit);
       
       const url = `${getBackendUrl(EMPLOYER_ENDPOINTS.GET_ALL)}?${params.toString()}`;
-      const response = await apiClient.get(url);
+      const response = await axios.get(url);
       return response.data;
     },
     handleApiError
@@ -28,6 +29,8 @@ export const getEmployers = async (filters = {}) => {
 // Получить профиль текущего работодателя
 export const getCurrentEmployer = async () => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const response = await apiClient.get(getBackendUrl(EMPLOYER_ENDPOINTS.GET_ME));
     return response.data;
   });
@@ -46,6 +49,8 @@ export const getEmployerById = async (EmployerId) => {
 // Обновить профиль работодателя
 export const updateEmployerProfile = async (profileData) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const response = await apiClient.patch(getBackendUrl(EMPLOYER_ENDPOINTS.UPDATE_PROFILE), profileData);
     return response.data;
   });
@@ -54,6 +59,8 @@ export const updateEmployerProfile = async (profileData) => {
 // Загрузить логотип
 export const uploadEmployerLogo = async (file) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const formData = new FormData();
     formData.append('file', file);
     const response = await apiClient.post(getBackendUrl(EMPLOYER_ENDPOINTS.UPLOAD_LOGO), formData, {
@@ -68,6 +75,8 @@ export const uploadEmployerLogo = async (file) => {
 // Загрузить фото офиса
 export const uploadOfficePhotos = async (files) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+
     const formData = new FormData();
     files.forEach(file => {
       formData.append('files', file);
@@ -84,6 +93,8 @@ export const uploadOfficePhotos = async (files) => {
 // Подать заявку на верификацию
 export const submitVerification = async () => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
+    
     const response = await apiClient.post(getBackendUrl(EMPLOYER_ENDPOINTS.VERIFICATION));
     return response.data;
   });

@@ -520,22 +520,56 @@
   }
 }
 
-/* Теги таб */
-.tags-tab-employer {
-  padding: 20px 0;
+/* ========== КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ ВКЛАДКИ ТЕГОВ ========== */
+
+/* Общий контейнер для всего контента */
+.profile-main-employer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* Глобальное предотвращение горизонтального скролла */
 }
 
+/* Исправление для tab-content */
+.tab-content {
+  padding: 24px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Специальные исправления для вкладки тегов */
+.tags-tab-employer {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+/* Контейнер для заголовка тегов */
 .tags-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
 }
 
 .tags-header h3 {
   font-size: 18px;
   color: var(--primary-dark);
   margin: 0;
+}
+
+.tags-header button {
+  flex-shrink: 0;
 }
 
 /* Предупреждение о верификации */
@@ -548,73 +582,45 @@
   border-radius: var(--border-radius-md);
   margin-bottom: 20px;
   color: #ff9800;
-}
-
-.verification-warning p {
-  margin: 0;
-  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Фильтры тегов */
 .tags-filters {
   margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .search-tags-wrapper {
   position: relative;
   margin-bottom: 16px;
-}
-
-.search-icon-tags {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
+  width: 100%;
 }
 
 .search-tags-input {
   width: 100%;
-  padding: 10px 12px 10px 40px;
+  min-width: 0; /* Критически важно для предотвращения переполнения */
+  padding: 10px 32px 10px 40px;
   border: 1px solid rgba(26, 51, 74, 0.2);
   border-radius: var(--border-radius-md);
   font-size: 14px;
   transition: all var(--transition-fast);
-}
-
-.search-tags-input:focus {
-  outline: none;
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 0 2px rgba(24, 163, 183, 0.1);
-}
-
-.clear-search {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color var(--transition-fast);
-}
-
-.clear-search:hover {
-  color: var(--error);
+  background: var(--bg-card);
+  box-sizing: border-box;
 }
 
 .category-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .category-filter {
+  flex-shrink: 0;
   padding: 6px 12px;
   background: rgba(24, 163, 183, 0.05);
   border: 1px solid rgba(24, 163, 183, 0.2);
@@ -623,24 +629,16 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   color: var(--text-dark);
+  white-space: nowrap;
 }
 
-.category-filter:hover {
-  background: rgba(24, 163, 183, 0.1);
-  border-color: var(--primary-accent);
-}
-
-.category-filter.active {
-  background: var(--primary-accent);
-  border-color: var(--primary-accent);
-  color: white;
-}
-
-/* Сетка тегов */
+/* Сетка тегов - ГЛАВНОЕ ИСПРАВЛЕНИЕ */
 .tags-grid-employer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tag-card-employer {
@@ -649,26 +647,30 @@
   border-radius: var(--border-radius-md);
   padding: 16px;
   transition: all var(--transition-fast);
-}
-
-.tag-card-employer:hover {
-  border-color: rgba(24, 163, 183, 0.3);
-  box-shadow: var(--shadow-sm);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden; /* Предотвращаем выход контента */
 }
 
 .tag-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 12px;
+  gap: 12px;
+  width: 100%;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
 .tag-name-employer {
   font-size: 16px;
   font-weight: 600;
   color: var(--primary-dark);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+  min-width: 0;
 }
 
 .tag-category-badge {
@@ -676,92 +678,116 @@
   border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.tag-category-badge.technology {
-  background: rgba(24, 163, 183, 0.1);
-  color: #18A3B7;
-}
+/* ========== ОСНОВНЫЕ АДАПТИВНЫЕ ПРАВИЛА ========== */
 
-.tag-category-badge.level {
-  background: rgba(111, 113, 161, 0.1);
-  color: #6F71A1;
-}
-
-.tag-category-badge.employment {
-  background: rgba(90, 165, 205, 0.1);
-  color: #5AA5CD;
-}
-
-.tag-category-badge.custom {
-  background: rgba(39, 230, 236, 0.1);
-  color: #27E6EC;
-}
-
-.tag-meta {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.tag-created-at {
-  display: inline-block;
-}
-
-/* Загрузка тегов */
-.tags-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  gap: 12px;
-}
-
-.spinner-small {
-  width: 30px;
-  height: 30px;
-  border: 2px solid rgba(24, 163, 183, 0.2);
-  border-top-color: var(--primary-accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Пустое состояние тегов */
-.tags-empty {
-  text-align: center;
-  padding: 60px 20px;
-  background: rgba(24, 163, 183, 0.02);
-  border-radius: var(--border-radius-lg);
-}
-
-.tags-empty svg {
-  color: var(--text-muted);
-  margin-bottom: 16px;
-}
-
-.tags-empty p {
-  color: var(--text-muted);
-  margin-bottom: 16px;
-}
-
-/* Responsive */
+/* Планшеты и мобильные */
 @media (max-width: 768px) {
+  .tab-content {
+    padding: 16px;
+  }
+  
   .tags-grid-employer {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Принудительно одна колонка на мобильных */
+    gap: 12px;
+  }
+  
+  .tag-card-employer {
+    padding: 14px;
+  }
+  
+  .tag-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .tag-name-employer {
+    font-size: 15px;
+    width: 100%;
+  }
+  
+  .tag-category-badge {
+    align-self: flex-start;
   }
   
   .category-filters {
     overflow-x: auto;
     flex-wrap: nowrap;
     padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
   
   .category-filter {
     white-space: nowrap;
   }
   
-  .tag-info {
+  .tags-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+  }
+  
+  .tags-header button {
+    width: 100%;
+  }
+}
+
+/* Очень маленькие телефоны */
+@media (max-width: 480px) {
+  .tab-content {
+    padding: 12px;
+  }
+  
+  .tags-grid-employer {
+    gap: 10px;
+  }
+  
+  .tag-card-employer {
+    padding: 12px;
+  }
+  
+  .tag-name-employer {
+    font-size: 14px;
+  }
+  
+  .tag-category-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  
+  .search-tags-input {
+    font-size: 13px;
+    padding: 8px 30px 8px 36px;
+  }
+  
+  .category-filter {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+  
+  .verification-warning {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+}
+
+/* Горизонтальная ориентация */
+@media (max-width: 768px) and (orientation: landscape) {
+  .tags-grid-employer {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .tag-info {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .category-filters {
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
 }

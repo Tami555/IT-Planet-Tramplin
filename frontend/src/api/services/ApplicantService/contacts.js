@@ -1,11 +1,14 @@
 import { getBackendUrl } from "../../config/endpoints";
 import { apiRequest } from "../../utils/apiRequest";
 import { apiClient } from "../../config/apiClient";
+import { check_token } from "../UserService/tokens";
+import axios from "axios";
 
 
 // Получить список друзей (контактов)
 export const getContacts = async () => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
     const response = await apiClient.get('/applicants/me/contacts');
     return response.data;
   });
@@ -14,6 +17,7 @@ export const getContacts = async () => {
 // Отправить запрос в друзья
 export const sendFriendRequest = async (receiverId) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
     const response = await apiClient.post('/applicants/me/contacts', {
       receiverId: receiverId
     });
@@ -24,6 +28,7 @@ export const sendFriendRequest = async (receiverId) => {
 // Получить входящие запросы в друзья
 export const getFriendRequests = async () => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
     const response = await apiClient.get('/applicants/me/contacts/requests');
     return response.data;
   });
@@ -32,6 +37,7 @@ export const getFriendRequests = async () => {
 // Принять входящий запрос в друзья
 export const acceptFriendRequest = async (contactId) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
     const response = await apiClient.patch(`/applicants/me/contacts/${contactId}/accept`);
     return response.data;
   });
@@ -40,6 +46,7 @@ export const acceptFriendRequest = async (contactId) => {
 // Отклонить входящий запрос в друзья
 export const rejectFriendRequest = async (contactId) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
     const response = await apiClient.patch(`/applicants/me/contacts/${contactId}/reject`);
     return response.data;
   });
@@ -48,6 +55,7 @@ export const rejectFriendRequest = async (contactId) => {
 // Удалить контакт
 export const deleteContact = async (contactId) => {
   return await apiRequest(async () => {
+    await check_token() //обновляем токен
     const response = await apiClient.delete(`/applicants/me/contacts/${contactId}`);
     return response.data;
   });
@@ -56,7 +64,8 @@ export const deleteContact = async (contactId) => {
 // Получить профиль соискателя по ID
 export const getApplicantById = async (applicantId) => {
   return await apiRequest(async () => {
-    const response = await apiClient.get(`/applicants/${applicantId}`);
+    const url = getBackendUrl(`/applicants/${applicantId}`)
+    const response = await axios.get(url);
     return response.data;
   });
 };

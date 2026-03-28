@@ -2,6 +2,7 @@
 
 // Users
 export { login, registrationEmployer, registrationApplicant, logout } from "./UserService/auth";
+export { check_token } from "./UserService/tokens";
 
 // Opportunities
 export { getOpportunities, getOpportunityById, createOpportunity, updateOpportunity, uploadOpportunityMedia, deleteOpportunity } from "./OpportunityService/opportunity";
