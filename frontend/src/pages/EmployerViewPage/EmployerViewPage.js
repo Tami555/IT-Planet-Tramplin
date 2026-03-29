@@ -262,7 +262,7 @@ const EmployerViewPage = () => {
                         href={link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="social-link"
+                        className="social-link-company"
                       >
                         <SocialIcon size={18} />
                         {link.replace(/^https?:\/\//, '').split('/')[0]}

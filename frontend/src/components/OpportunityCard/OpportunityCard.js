@@ -63,7 +63,7 @@ const OpportunityCard = ({
       <div className="card-header">
         <div className="company-info">
           <img 
-            src={opportunity.company?.logo || getMediaData(opportunity.employer?.logoUrl) || default_company_ava} 
+            src={opportunity.employer?.logoUrl ? getMediaData(opportunity.employer?.logoUrl) : default_company_ava} 
             alt={opportunity.company?.name || opportunity.employer?.companyName}
             className="company-logo"
             onError={(e) => {

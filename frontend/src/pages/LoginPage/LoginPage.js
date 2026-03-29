@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Briefcase } from 'lucide-react';
+import { Mail, Lock, User, Briefcase, Shield  } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import FormContainer from '../../components/UI/FormContainer/FormContainer';
@@ -52,6 +52,10 @@ const LoginPage = () => {
           <span className="role-info-separator">\</span>
           <span className="role-info-text">
             <Briefcase size={16} /> Работодатель
+          </span>
+          <span className="role-info-separator">\</span>
+          <span className="role-info-text">
+            <Shield size={16} /> Администратор
           </span>
           <p className="role-info-hint">Войдите в свой профиль</p>
         </div>

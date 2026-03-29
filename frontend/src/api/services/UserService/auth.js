@@ -76,11 +76,13 @@ export const registrationApplicant = async (
 
 export const logout = async () => {
     // Удаляем cookies и инфу о пользователе
-    return await apiRequest(
-      async () => {
+    try{
         await apiClient.post(USER_ENDPOINTS.LOGOUT, {refreshToken: getCookie("refresh_token")});
         deleteCookie('access_token');
         deleteCookie('refresh_token');
-      }
-    )
+        return;
+    }
+    catch{
+      window.location.href = '/';
+    }
 }

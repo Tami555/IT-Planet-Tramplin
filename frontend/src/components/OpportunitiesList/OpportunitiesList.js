@@ -109,15 +109,14 @@ const OpportunitiesList = ({
                     <Eye size={18} />
                     <span>{opp._count?.applications || 0}</span>
                   </button>
-                  {(opp.status === 'DRAFT' || opp.status === 'PLANNED' || opp.status === 'MODERATION') && (
-                    <button 
-                      className="action-btn-opp"
-                      onClick={() => onEdit(opp)}
-                      title="Редактировать"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                  )}
+                  <button 
+                    className="action-btn-opp"
+                    onClick={() => onEdit(opp)}
+                    title="Редактировать"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+
                   <button 
                     className="action-btn-opp delete"
                     onClick={() => handleDeleteConfirm(opp)}

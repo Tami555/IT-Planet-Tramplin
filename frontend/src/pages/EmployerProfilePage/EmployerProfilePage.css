@@ -791,3 +791,101 @@
     overflow-x: visible;
   }
 }
+
+
+/* Стили для редактора социальных сетей */
+.social-links-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.social-link-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(24, 163, 183, 0.03);
+  border-radius: var(--border-radius-md);
+  padding: 8px 12px;
+  transition: all var(--transition-fast);
+}
+
+.social-link-input:hover {
+  background: rgba(24, 163, 183, 0.05);
+}
+
+.social-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(24, 163, 183, 0.1);
+  border-radius: 50%;
+  color: var(--primary-accent);
+  flex-shrink: 0;
+}
+
+.social-link-field {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(26, 51, 74, 0.2);
+  border-radius: var(--border-radius-md);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  background: var(--bg-card);
+}
+
+.social-link-field:focus {
+  outline: none;
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px rgba(24, 163, 183, 0.1);
+}
+
+.remove-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(244, 67, 54, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: #f44336;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.remove-social-link:hover {
+  background: rgba(244, 67, 54, 0.2);
+  transform: scale(1.05);
+}
+
+.add-social-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(24, 163, 183, 0.05);
+  border: 1px dashed rgba(24, 163, 183, 0.3);
+  border-radius: var(--border-radius-md);
+  font-size: 13px;
+  color: var(--primary-accent);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: fit-content;
+}
+
+.add-social-link-btn:hover {
+  background: rgba(24, 163, 183, 0.1);
+  border-color: var(--primary-accent);
+  transform: translateY(-1px);
+}
+
+.social-links-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}

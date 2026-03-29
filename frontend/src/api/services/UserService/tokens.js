@@ -8,11 +8,10 @@ import { apiClient } from "../../config/apiClient";
 export const check_token = async () => {
     // проверка действия токена
     const res = await apiClient.get(getBackendUrl(USER_ENDPOINTS.VERIFY));
-    if(res.data.valid == false){
+    console.log(res.data.valid, "ООТвет")
+    if(!res.data.valid){
         try {
             const refresh_token = getCookie('refresh_token');
-            if (!refresh_token) return false;
-
             // Обновляем токен
             const refreshRes = await axios.post(getBackendUrl(USER_ENDPOINTS.REFRESH), {
                 refreshToken: refresh_token
@@ -22,6 +21,7 @@ export const check_token = async () => {
             setCookie('refresh_token', data.refreshToken);
             return true;
         } catch (refreshError) {
+            console.log("ПОЙМАЛ")
             // Удаляем невалидные cookies
             deleteCookie('access_token');
             deleteCookie('refresh_token');

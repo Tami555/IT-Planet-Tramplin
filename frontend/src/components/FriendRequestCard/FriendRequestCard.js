@@ -12,7 +12,7 @@ const FriendRequestCard = ({ request, onAccept, onReject, isProcessing }) => {
     <div className="friend-request-card">
       <div className="request-avatar">
         <img 
-          src={request?.sender?.avatarUrl ? getMediaData(request.avatarUrl) : default_user_ava} 
+          src={request?.sender?.avatarUrl ? getMediaData(request?.sender?.avatarUrl) : default_user_ava} 
           alt={`${request.firstName} ${request.lastName}`}
           className="request-avatar-img"
         />

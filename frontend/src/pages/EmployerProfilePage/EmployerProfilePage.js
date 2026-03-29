@@ -4,7 +4,8 @@ import {
   Building2, Mail, Globe, MapPin, Phone, Edit2, 
   Upload, Trash2, Plus, CheckCircle, XCircle, Clock,
   Image, Users, Briefcase, ExternalLink, Shield, LogOut,
-  Tag, Search, X
+  Tag, Search, X, Instagram, Twitter, Linkedin, Github,
+  Link as LinkIcon
 } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -61,6 +62,8 @@ const EmployerProfilePage = () => {
     setProfile(data);
     setEditForm({
       companyName: data.companyName || '',
+      inn: data.inn,
+      corporateEmail: data.corporateEmail,
       description: data.description || '',
       industry: data.industry || '',
       websiteUrl: data.websiteUrl || '',
@@ -167,7 +170,7 @@ const EmployerProfilePage = () => {
       fetchProfile();
       fetchOpportunities();
       fetchApplications();
-      fetchTags(); // Загружаем теги
+      fetchTags();
     }
   }, [User]);
   
@@ -175,20 +178,53 @@ const EmployerProfilePage = () => {
   useEffect(() => {
     let filtered = [...tags];
     
-    // Фильтр по поиску
     if (searchTagQuery) {
       filtered = filtered.filter(tag => 
         tag.name.toLowerCase().includes(searchTagQuery.toLowerCase())
       );
     }
     
-    // Фильтр по категории
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(tag => tag.category === selectedCategory);
     }
     
     setFilteredTags(filtered);
   }, [searchTagQuery, selectedCategory, tags]);
+  
+  // Функции для работы с социальными сетями
+  const getSocialIcon = (url) => {
+    if (url.includes('instagram')) return Instagram;
+    if (url.includes('twitter') || url.includes('x.com')) return Twitter;
+    if (url.includes('linkedin')) return Linkedin;
+    if (url.includes('github')) return Github;
+    return LinkIcon;
+  };
+
+  const getSocialName = (url) => {
+    if (url.includes('instagram')) return 'Instagram';
+    if (url.includes('twitter') || url.includes('x.com')) return 'Twitter';
+    if (url.includes('linkedin')) return 'LinkedIn';
+    if (url.includes('github')) return 'GitHub';
+    return 'Сайт';
+  };
+
+  const handleAddSocialLink = () => {
+    setEditForm({
+      ...editForm,
+      socialLinks: [...editForm.socialLinks, '']
+    });
+  };
+
+  const handleSocialLinkChange = (index, value) => {
+    const newSocialLinks = [...editForm.socialLinks];
+    newSocialLinks[index] = value;
+    setEditForm({ ...editForm, socialLinks: newSocialLinks });
+  };
+
+  const handleRemoveSocialLink = (index) => {
+    const newSocialLinks = editForm.socialLinks.filter((_, i) => i !== index);
+    setEditForm({ ...editForm, socialLinks: newSocialLinks });
+  };
   
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -427,7 +463,6 @@ const EmployerProfilePage = () => {
                     name="inn"
                     value={editForm.inn}
                     onChange={(e) => setEditForm({...editForm, inn: e.target.value})}
-                    required
                   />
                   <InputBlock
                     label="Описание"
@@ -443,7 +478,6 @@ const EmployerProfilePage = () => {
                     name="corporateEmail"
                     value={editForm.corporateEmail}
                     onChange={(e) => setEditForm({...editForm, corporateEmail: e.target.value})}
-                    required
                   />
                   <InputBlock
                     label="Сфера деятельности"
@@ -457,6 +491,53 @@ const EmployerProfilePage = () => {
                     value={editForm.websiteUrl}
                     onChange={(e) => setEditForm({...editForm, websiteUrl: e.target.value})}
                   />
+                  
+                  {/* Блок социальных сетей */}
+                  <div className="form-group">
+                    <label className="input-label">Социальные сети</label>
+                    <div className="social-links-editor">
+                      {editForm.socialLinks.map((link, index) => (
+                        <div key={index} className="social-link-input">
+                          <div className="social-link-icon">
+                            {link ? (
+                              (() => {
+                                const Icon = getSocialIcon(link);
+                                return <Icon size={18} />;
+                              })()
+                            ) : (
+                              <LinkIcon size={18} />
+                            )}
+                          </div>
+                          <input
+                            type="url"
+                            placeholder="https://..."
+                            value={link}
+                            onChange={(e) => handleSocialLinkChange(index, e.target.value)}
+                            className="social-link-field"
+                          />
+                          <button
+                            type="button"
+                            className="remove-social-link"
+                            onClick={() => handleRemoveSocialLink(index)}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="add-social-link-btn"
+                        onClick={handleAddSocialLink}
+                      >
+                        <Plus size={16} />
+                        Добавить ссылку
+                      </button>
+                      <p className="social-links-hint">
+                        Поддерживаются ссылки на Instagram, Twitter, LinkedIn, GitHub и другие соцсети
+                      </p>
+                    </div>
+                  </div>
+                  
                   <div className="form-group">
                     <label className="input-label">Город</label>
                     <select
@@ -470,6 +551,7 @@ const EmployerProfilePage = () => {
                       ))}
                     </select>
                   </div>
+                  
                   <div className="edit-actions">
                     {errorupdatingProfile && <p style={{color: 'red'}}>{errorupdatingProfile}</p>}
                     <Button variant="outline" onClick={() => setIsEditing(false)}>
@@ -530,6 +612,31 @@ const EmployerProfilePage = () => {
               <div className="info-card-employer">
                 <h2>О компании</h2>
                 <p className="description-text">{profile.description}</p>
+              </div>
+            )}
+
+            {/* Социальные сети */}
+            {profile.socialLinks && profile.socialLinks.length > 0 && (
+              <div className="info-card">
+                <h2>Социальные сети</h2>
+                <div className="social-links">
+                  {profile.socialLinks.map((link, index) => {
+                    const SocialIcon = getSocialIcon(link);
+                    return (
+                      <a 
+                        key={index} 
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="social-link-company"
+                      >
+                        <SocialIcon size={18} />
+                          {link.replace(/^https?:\/\//, '').split('/')[0]}
+                        <ExternalLink size={14} />
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             )}
             
@@ -781,7 +888,7 @@ const EmployerProfilePage = () => {
         onSave={saveOpportunity}
         opportunity={editingOpportunity}
         isLoading={savingOpportunity}
-        tags={tags} // Передаем теги для выбора при создании возможности
+        tags={tags}
       />
       
       {/* Модальное окно создания тега */}

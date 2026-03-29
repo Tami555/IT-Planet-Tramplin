@@ -369,15 +369,17 @@ const OpportunityDetailPage = () => {
             {(IsApplicant == true || IsAuth == false) &&
               <div className="action-card">
                 <h3>Действия</h3>
-                <Button
-                  variant={hasApplied ? 'outline' : 'primary'}
-                  size="large"
-                  fullWidth
-                  onClick={handleApply}
-                  disabled={hasApplied || applyLoading}
-                >
-                  {hasApplied ? '✓ Вы откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
-                </Button>
+                {IsAuth && IsApplicant &&
+                  <Button
+                    variant={hasApplied ? 'outline' : 'primary'}
+                    size="large"
+                    fullWidth
+                    onClick={handleApply}
+                    disabled={hasApplied || applyLoading}
+                  >
+                    {hasApplied ? '✓ Вы откликнулись' : applyLoading ? 'Отправка...' : 'Откликнуться'}
+                  </Button>
+                }
                 <Button
                   variant="outline"
                   size="large"
