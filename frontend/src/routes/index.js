@@ -1,0 +1,42 @@
+import MainPage from '../pages/MainPage/MainPage';
+import OpportunityDetailPage from '../pages/OpportunityDetailPage/OpportunityDetailPage';
+import FavoritesPage from '../pages/FavoritesPage/FavoritesPage';
+import CompaniesPage from '../pages/CompaniesPage/CompaniesPage';
+import LoginPage from '../pages/LoginPage/LoginPage';
+import RegisterPage from '../pages/RegisterPage/RegisterPage';
+import ApplicantProfilePage from '../pages/ApplicantProfilePage/ApplicantProfilePage';
+import ContactsPage from '../pages/ContactsPage/ContactsPage';
+import ApplicantViewPage from '../pages/ApplicantViewPage/ApplicantViewPage';
+import EmployerProfilePage from '../pages/EmployerProfilePage/EmployerProfilePage';
+import ApplicationsPage from '../pages/ApplicationsPage/ApplicationsPage';
+import CuratorProfilePage from '../pages/CuratorProfilePage/CuratorProfilePage';
+import EmployerViewPage from '../pages/EmployerViewPage/EmployerViewPage';
+import CuratorViewPage from '../pages/CuratorViewPage/CuratorViewPage';
+
+
+export const common_routes = [
+    { path: '/', element: MainPage },
+    { path: '/opportunity/:id', element: OpportunityDetailPage },
+    { path: '/favorites', element: FavoritesPage },
+    { path: '/companies', element: CompaniesPage },
+    { path: '/employer/:id', element: EmployerViewPage },
+];
+
+export const no_authorized_routes = [
+    { path: '/login', element: LoginPage },
+    { path: '/register', element: RegisterPage },
+    { path: '*', element: MainPage },
+];
+
+export const authorized_routes = [
+    { path: '/login', element: MainPage },
+    { path: '/register', element: MainPage },
+    { path: '/profile', element: ApplicantProfilePage },
+    { path: '/contacts', element: ContactsPage },
+    { path: '/applicant/:id', element: ApplicantViewPage },
+    { path: '/employer/profile', element: EmployerProfilePage },
+    { path: '/curator', element: CuratorProfilePage },
+    { path: '/curator/:id', element: CuratorViewPage },
+    { path: '/applications', element: ApplicationsPage},
+    { path: '*', element: MainPage },
+];
